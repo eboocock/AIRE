@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Pre-Listing Package | Maximize Your Home Sale</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%); }
+        .gradient-text { background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .slide-in { animation: slideIn 0.6s ease-out; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .checkmark { animation: checkmark 0.5s ease-out; }
+        @keyframes checkmark {
+            0% { transform: scale(0) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+        input:focus { outline: none; border-color: #7c3aed !important; ring: 2px; ring-color: #7c3aed; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function App() {
+            const [currentView, setCurrentView] = useState('landing');
+            const [calculatorData, setCalculatorData] = useState({
+                address: '',
+                purchasePrice: '',
+                mortgageBalance: '',
+                estimatedValue: 750000,
+            });
+            const [leadData, setLeadData] = useState({
+                name: '',
+                email: '',
+                phone: '',
+                bestTime: 'morning'
+            });
+            const [showSuccess, setShowSuccess] = useState(false);
+
+            return (
+                <div className="min-h-screen">
+                    <Header />
+                    
+                    {currentView === 'landing' && (
+                        <LandingPage onCalculate={() => setCurrentView('calculator')} />
+                    )}
+                    
+                    {currentView === 'calculator' && (
+                        <NetProceedsCalculator 
+                            data={calculatorData}
+                            setData={setCalculatorData}
+                            onNext={() => setCurrentView('results')}
+                        />
+                    )}
+                    
+                    {currentView === 'results' && (
+                        <ResultsPage 
+                            data={calculatorData}
+                            onRequestPackage={() => setCurrentView('leadCapture')}
+                        />
+                    )}
+                    
+                    {currentView === 'leadCapture' && (
+                        <LeadCapture 
+                            leadData={leadData}
+                            setLeadData={setLeadData}
+                            calculatorData={calculatorData}
+                            onSubmit={() => {
+                                setShowSuccess(true);
+                                setTimeout(() => setCurrentView('thankyou'), 1500);
+                            }}
+                            showSuccess={showSuccess}
+                        />
+                    )}
+                    
+                    {currentView === 'thankyou' && (
+                        <ThankYouPage />
+                    )}
+                    
+                    <Footer />
+                </div>
+            );
+        }
+
+        function Header() {
+            return (
+                <header className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center">
+                                    <i className="fas fa-home text-white text-2xl"></i>
+                                </div>
+                                <div>
+                                    <div className="text-xl font-bold text-gray-900">Sarah Johnson</div>
+                                    <div className="text-sm text-gray-600">Licensed WA Realtor</div>
+                                </div>
+                            </div>
+                            <button className="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition font-semibold flex items-center">
+                                <i className="fas fa-phone mr-2"></i>
+                                (206) 555-0123
+                            </button>
+                        </div>
+                    </div>
+                </header>
+            );
+        }
+
+        function LandingPage({ onCalculate }) {
+            return (
+                <>
+                    {/* Hero Section */}
+                    <section className="gradient-bg text-white py-20 relative overflow-hidden">
+                        <div className="absolute inset-0 opacity-10">
+                            <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
+                            <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+                        </div>
+                        
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+                            <div className="text-center slide-in">
+                                <div className="inline-block bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold mb-6">
+                                    🎁 Valued at $2,500 • Yours FREE
+                                </div>
+                                
+                                <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight">
+                                    Get Your FREE<br/>
+                                    <span className="text-yellow-300">Pre-Listing Package</span>
+                                </h1>
+                                
+                                <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto leading-relaxed">
+                                    Stop guessing. Get a complete roadmap to sell your Washington home for maximum profit - with zero obligation.
+                                </p>
+                                
+                                <button 
+                                    onClick={onCalculate}
+                                    className="bg-white text-blue-600 px-10 py-5 rounded-xl font-bold text-xl hover:bg-gray-100 transition shadow-2xl inline-flex items-center group"
+                                >
+                                    Start Your Net Proceeds Calculator
+                                    <i className="fas fa-arrow-right ml-3 group-hover:translate-x-1 transition"></i>
+                                </button>
+                                
+                                <p className="text-blue-200 text-sm mt-4">
+                                    <i className="fas fa-lock mr-2"></i>
+                                    No credit card required • Takes 2 minutes
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* What's Included Section */}
+                    <section className="py-20 bg-white">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="text-center mb-16">
+                                <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                                    Everything You Need to <span className="gradient-text">Sell Smart</span>
+                                </h2>
+                                <p className="text-xl text-gray-600">What Zillow and Redfin don't give you</p>
+                            </div>
+                            
+                            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <PackageItem 
+                                    icon="fa-calculator"
+                                    title="Net Proceeds Calculator"
+                                    description="See exactly what you'll walk away with after all costs"
+                                    value="$500"
+                                />
+                                <PackageItem 
+                                    icon="fa-search-dollar"
+                                    title="Pre-Listing Inspection"
+                                    description="Video walkthrough identifying what to fix and what to skip"
+                                    value="$400"
+                                />
+                                <PackageItem 
+                                    icon="fa-calendar-check"
+                                    title="Strategic Timing Analysis"
+                                    description="Should you sell now or wait? Data-driven recommendation"
+                                    value="$300"
+                                />
+                                <PackageItem 
+                                    icon="fa-chart-line"
+                                    title="Neighborhood Analysis"
+                                    description="Real comparable sales, not Zillow guesses"
+                                    value="$400"
+                                />
+                                <PackageItem 
+                                    icon="fa-users"
+                                    title="Vetted Vendor Directory"
+                                    description="Trusted contractors, stagers, photographers with discounts"
+                                    value="$200"
+                                />
+                                <PackageItem 
+                                    icon="fa-bullhorn"
+                                    title="Custom Marketing Plan"
+                                    description="Exactly how I'll market your home to 10,000+ buyers"
+                                    value="$300"
+                                />
+                                <PackageItem 
+                                    icon="fa-map-marked-alt"
+                                    title="Seller Success Roadmap"
+                                    description="Week-by-week timeline from prep to closing"
+                                    value="$200"
+                                />
+                                <PackageItem 
+                                    icon="fa-shield-alt"
+                                    title="Avoid Costly Mistakes"
+                                    description="Guide to 7 mistakes that cost sellers $50K+"
+                                    value="$200"
+                                />
+                            </div>
+                            
+                            <div className="mt-12 text-center">
+                                <div className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl">
+                                    <div className="text-sm font-semibold mb-1">TOTAL VALUE</div>
+                                    <div className="text-4xl font-black">$2,500</div>
+                                    <div className="text-lg mt-1">Your Price: <span className="text-yellow-300 font-bold">FREE</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Why This Matters Section */}
+                    <section className="py-20 bg-gradient-to-br from-blue-50 to-purple-50">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="text-center mb-16">
+                                <h2 className="text-4xl font-bold mb-4">Why You Can't Get This Anywhere Else</h2>
+                                <p className="text-xl text-gray-600">Local expertise that Zillow can't replicate</p>
+                            </div>
+                            
+                            <div className="grid md:grid-cols-3 gap-8">
+                                <ComparisonCard 
+                                    title="Zillow/Redfin"
+                                    items={[
+                                        { text: "Automated estimate", negative: true },
+                                        { text: "No local expertise", negative: true },
+                                        { text: "Just a number", negative: true },
+                                        { text: "No personalization", negative: true },
+                                        { text: "No follow-up support", negative: true }
+                                    ]}
+                                />
+                                <ComparisonCard 
+                                    title="Other Agents"
+                                    items={[
+                                        { text: "Basic CMA report", negative: true },
+                                        { text: "Push to list immediately", negative: true },
+                                        { text: "Generic advice", negative: true },
+                                        { text: "No upfront value", negative: true },
+                                        { text: "High pressure sales", negative: true }
+                                    ]}
+                                />
+                                <ComparisonCard 
+                                    title="Me"
+                                    featured={true}
+                                    items={[
+                                        { text: "Complete seller package", negative: false },
+                                        { text: "Deep neighborhood knowledge", negative: false },
+                                        { text: "Strategic roadmap", negative: false },
+                                        { text: "Massive upfront value", negative: false },
+                                        { text: "Zero obligation", negative: false }
+                                    ]}
+                                />
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Social Proof */}
+                    <section className="py-20 bg-white">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <h2 className="text-4xl font-bold text-center mb-12">What Sellers Are Saying</h2>
+                            
+                            <div className="grid md:grid-cols-3 gap-8">
+                                <TestimonialCard 
+                                    name="Jennifer M."
+                                    location="Bellevue"
+                                    text="The pre-listing inspection saved me $12,000! Sarah caught issues I never would have thought about. We sold for $42K over asking."
+                                    rating={5}
+                                />
+                                <TestimonialCard 
+                                    name="David R."
+                                    location="Seattle"
+                                    text="Her timing analysis was spot-on. Listed in March as she recommended and had 6 offers in 10 days. Best decision we made."
+                                    rating={5}
+                                />
+                                <TestimonialCard 
+                                    name="Michelle K."
+                                    location="Tacoma"
+                                    text="The vendor directory alone was worth it. Every contractor she recommended was fantastic. Made the process so much easier."
+                                    rating={5}
+                                />
+                            </div>
+                            
+                            <div className="mt-12 text-center">
+                                <div className="inline-flex items-center space-x-2 text-yellow-500">
+                                    {[...Array(5)].map((_, i) => (
+                                        <i key={i} className="fas fa-star text-3xl"></i>
+                                    ))}
+                                </div>
+                                <p className="text-gray-600 mt-3 text-lg">
+                                    Rated 5.0/5.0 by 127+ Washington homeowners
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Final CTA */}
+                    <section className="py-20 gradient-bg text-white relative overflow-hidden">
+                        <div className="absolute inset-0 opacity-10">
+                            <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+                        </div>
+                        
+                        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+                            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                                Ready to Sell Smarter?
+                            </h2>
+                            <p className="text-xl mb-8 text-blue-100">
+                                Start with the Net Proceeds Calculator to see what you'll actually walk away with
+                            </p>
+                            <button 
+                                onClick={onCalculate}
+                                className="bg-white text-blue-600 px-10 py-5 rounded-xl font-bold text-xl hover:bg-gray-100 transition shadow-2xl inline-flex items-center"
+                            >
+                                Calculate My Net Proceeds
+                                <i className="fas fa-arrow-right ml-3"></i>
+                            </button>
+                            <p className="text-blue-200 text-sm mt-4">
+                                Takes 2 minutes • No obligation • 100% free
+                            </p>
+                        </div>
+                    </section>
+                </>
+            );
+        }
+
+        function NetProceedsCalculator({ data, setData, onNext }) {
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onNext();
+            };
+
+            return (
+                <section className="py-16 min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+                    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden slide-in">
+                            <div className="gradient-bg text-white p-8 text-center">
+                                <i className="fas fa-calculator text-5xl mb-4"></i>
+                                <h1 className="text-3xl font-bold mb-2">Net Proceeds Calculator</h1>
+                                <p className="text-blue-100">See what you'll actually walk away with</p>
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Home Address *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.address}
+                                        onChange={(e) => setData({...data, address: e.target.value})}
+                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg"
+                                        placeholder="123 Main St, Seattle, WA 98101"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            What did you pay for your home?
+                                        </label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-3.5 text-gray-500 text-lg">$</span>
+                                            <input
+                                                type="number"
+                                                value={data.purchasePrice}
+                                                onChange={(e) => setData({...data, purchasePrice: e.target.value})}
+                                                className="w-full pl-8 pr-4 py-3 border-2 border-gray-300 rounded-lg text-lg"
+                                                placeholder="450,000"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Current mortgage balance? *
+                                        </label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-3.5 text-gray-500 text-lg">$</span>
+                                            <input
+                                                type="number"
+                                                value={data.mortgageBalance}
+                                                onChange={(e) => setData({...data, mortgageBalance: e.target.value})}
+                                                className="w-full pl-8 pr-4 py-3 border-2 border-gray-300 rounded-lg text-lg"
+                                                placeholder="320,000"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-blue-50 p-6 rounded-xl">
+                                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                                        <i className="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                                        What happens next?
+                                    </h3>
+                                    <ul className="space-y-2 text-sm text-gray-700">
+                                        <li className="flex items-start">
+                                            <i className="fas fa-check text-green-600 mr-2 mt-0.5"></i>
+                                            <span>I'll estimate your home's current value using recent sales in your neighborhood</span>
+                                        </li>
+                                        <li className="flex items-start">
+                                            <i className="fas fa-check text-green-600 mr-2 mt-0.5"></i>
+                                            <span>Calculate all selling costs (commission, closing, repairs)</span>
+                                        </li>
+                                        <li className="flex items-start">
+                                            <i className="fas fa-check text-green-600 mr-2 mt-0.5"></i>
+                                            <span>Show you exact net proceeds with and without my recommendations</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition shadow-lg"
+                                >
+                                    Calculate My Net Proceeds <i className="fas fa-arrow-right ml-2"></i>
+                                </button>
+
+                                <p className="text-xs text-gray-500 text-center">
+                                    Your information is secure and will only be used to generate your personalized report
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        function ResultsPage({ data, onRequestPackage }) {
+            const estimatedValue = 750000;
+            const mortgagePayoff = parseInt(data.mortgageBalance) || 420000;
+            const agentCommission = Math.round(estimatedValue * 0.05);
+            const closingCosts = Math.round(estimatedValue * 0.02);
+            const basicRepairs = 5000;
+            const staging = 2000;
+            
+            const standardNet = estimatedValue - mortgagePayoff - agentCommission - closingCosts - basicRepairs;
+            const optimizedNet = estimatedValue + 35000 - mortgagePayoff - agentCommission - Math.round((estimatedValue + 35000) * 0.02) - 8500 - staging;
+            const additionalProfit = optimizedNet - standardNet;
+
+            return (
+                <section className="py-16 min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+                    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="slide-in">
+                            {/* Header */}
+                            <div className="text-center mb-8">
+                                <h1 className="text-4xl font-bold mb-2">Your Net Proceeds Analysis</h1>
+                                <p className="text-xl text-gray-600">{data.address}</p>
+                            </div>
+
+                            {/* Main Results */}
+                            <div className="grid md:grid-cols-2 gap-8 mb-8">
+                                {/* Standard Approach */}
+                                <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-gray-200">
+                                    <div className="text-center mb-6">
+                                        <div className="inline-block bg-gray-100 px-4 py-2 rounded-full text-sm font-semibold text-gray-700 mb-4">
+                                            STANDARD APPROACH
+                                        </div>
+                                        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                                            ${standardNet.toLocaleString()}
+                                        </h2>
+                                        <p className="text-gray-600">What you'd walk away with</p>
+                                    </div>
+
+                                    <div className="space-y-3 text-sm">
+                                        <CalcRow label="Estimated Sale Price" value={`$${estimatedValue.toLocaleString()}`} positive />
+                                        <CalcRow label="Mortgage Payoff" value={`-$${mortgagePayoff.toLocaleString()}`} />
+                                        <CalcRow label="Agent Commission (5%)" value={`-$${agentCommission.toLocaleString()}`} />
+                                        <CalcRow label="Closing Costs (2%)" value={`-$${closingCosts.toLocaleString()}`} />
+                                        <CalcRow label="Basic Repairs" value={`-$${basicRepairs.toLocaleString()}`} />
+                                    </div>
+                                </div>
+
+                                {/* Optimized Approach */}
+                                <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-xl p-8 text-white relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-10 rounded-full -mr-20 -mt-20"></div>
+                                    
+                                    <div className="text-center mb-6 relative">
+                                        <div className="inline-block bg-yellow-400 text-gray-900 px-4 py-2 rounded-full text-sm font-bold mb-4">
+                                            WITH MY RECOMMENDATIONS
+                                        </div>
+                                        <h2 className="text-4xl font-black mb-2">
+                                            ${optimizedNet.toLocaleString()}
+                                        </h2>
+                                        <p className="text-blue-100">Optimized net proceeds</p>
+                                        
+                                        <div className="mt-4 inline-block bg-green-500 px-6 py-3 rounded-xl">
+                                            <div className="text-2xl font-bold">+${additionalProfit.toLocaleString()}</div>
+                                            <div className="text-sm">Additional profit</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3 text-sm relative">
+                                        <CalcRow label="Estimated Sale Price" value={`$${(estimatedValue + 35000).toLocaleString()}`} positive white />
+                                        <CalcRow label="Mortgage Payoff" value={`-$${mortgagePayoff.toLocaleString()}`} white />
+                                        <CalcRow label="Agent Commission (5%)" value={`-$${Math.round((estimatedValue + 35000) * 0.05).toLocaleString()}`} white />
+                                        <CalcRow label="Closing Costs (2%)" value={`-$${Math.round((estimatedValue + 35000) * 0.02).toLocaleString()}`} white />
+                                        <CalcRow label="Strategic Improvements" value={`-$${(8500).toLocaleString()}`} white />
+                                        <CalcRow label="Professional Staging" value={`-$${staging.toLocaleString()}`} white />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* What Makes the Difference */}
+                            <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                                <h3 className="text-2xl font-bold mb-6 text-center">
+                                    How We Add <span className="text-green-600">${additionalProfit.toLocaleString()}</span> to Your Sale
+                                </h3>
+                                
+                                <div className="grid md:grid-cols-3 gap-6">
+                                    <ImprovementCard 
+                                        title="Strategic Improvements"
+                                        investment="$3,500"
+                                        return="$20,000"
+                                        roi="571%"
+                                        items={[
+                                            "Fresh paint (neutral colors)",
+                                            "Updated fixtures & hardware",
+                                            "Minor kitchen refresh"
+                                        ]}
+                                    />
+                                    <ImprovementCard 
+                                        title="Professional Staging"
+                                        investment="$2,000"
+                                        return="$15,000"
+                                        roi="750%"
+                                        items={[
+                                            "Homes sell 73% faster",
+                                            "Buyers pay 6-10% more",
+                                            "Stand out from competition"
+                                        ]}
+                                    />
+                                    <ImprovementCard 
+                                        title="Expert Pricing"
+                                        investment="$0"
+                                        return="$10,000"
+                                        roi="∞"
+                                        items={[
+                                            "Data-driven pricing strategy",
+                                            "Multiple offer tactics",
+                                            "Avoid leaving money on table"
+                                        ]}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* CTA */}
+                            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-12 text-white text-center">
+                                <h2 className="text-3xl font-bold mb-4">
+                                    Want the Complete Roadmap?
+                                </h2>
+                                <p className="text-xl mb-2 text-blue-100">
+                                    Get your FREE Pre-Listing Package with:
+                                </p>
+                                <ul className="text-left inline-block mb-8 space-y-2">
+                                    <li className="flex items-center"><i className="fas fa-check-circle text-green-400 mr-3"></i>Video pre-listing inspection</li>
+                                    <li className="flex items-center"><i className="fas fa-check-circle text-green-400 mr-3"></i>Detailed timing analysis</li>
+                                    <li className="flex items-center"><i className="fas fa-check-circle text-green-400 mr-3"></i>Neighborhood comps report</li>
+                                    <li className="flex items-center"><i className="fas fa-check-circle text-green-400 mr-3"></i>Vetted vendor directory</li>
+                                    <li className="flex items-center"><i className="fas fa-check-circle text-green-400 mr-3"></i>Custom marketing plan</li>
+                                    <li className="flex items-center"><i className="fas fa-check-circle text-green-400 mr-3"></i>Week-by-week timeline</li>
+                                </ul>
+                                <div className="mb-6">
+                                    <span className="text-3xl font-bold">$2,500 Value</span>
+                                    <span className="mx-4">→</span>
+                                    <span className="text-yellow-300 text-4xl font-black">FREE</span>
+                                </div>
+                                <button 
+                                    onClick={onRequestPackage}
+                                    className="bg-white text-blue-600 px-10 py-5 rounded-xl font-bold text-xl hover:bg-gray-100 transition shadow-2xl inline-flex items-center"
+                                >
+                                    Get My Free Pre-Listing Package
+                                    <i className="fas fa-arrow-right ml-3"></i>
+                                </button>
+                                <p className="text-blue-200 text-sm mt-4">
+                                    No obligation • 30-minute consultation included
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        function LeadCapture({ leadData, setLeadData, calculatorData, onSubmit, showSuccess }) {
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                console.log('Lead captured:', { ...leadData, ...calculatorData });
+                onSubmit();
+            };
+
+            if (showSuccess) {
+                return (
+                    <section className="py-20 min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+                        <div className="text-center">
+                            <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 checkmark">
+                                <i className="fas fa-check text-white text-5xl"></i>
+                            </div>
+                            <h2 className="text-3xl font-bold text-gray-900 mb-4">Request Submitted!</h2>
+                            <p className="text-xl text-gray-600">Preparing your personalized package...</p>
+                        </div>
+                    </section>
+                );
+            }
+
+            return (
+                <section className="py-16 min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center">
+                    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12 slide-in">
+                            <div className="text-center mb-8">
+                                <div className="w-16 h-16 gradient-bg rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i className="fas fa-gift text-white text-2xl"></i>
+                                </div>
+                                <h2 className="text-3xl font-bold mb-2">Get Your Free Pre-Listing Package</h2>
+                                <p className="text-lg text-gray-600">I'll reach out within 24 hours to schedule your consultation</p>
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                                    <input
+                                        type="text"
+                                        value={leadData.name}
+                                        onChange={(e) => setLeadData({...leadData, name: e.target.value})}
+                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg"
+                                        placeholder="John Smith"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                                    <input
+                                        type="email"
+                                        value={leadData.email}
+                                        onChange={(e) => setLeadData({...leadData, email: e.target.value})}
+                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg"
+                                        placeholder="john@example.com"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+                                    <input
+                                        type="tel"
+                                        value={leadData.phone}
+                                        onChange={(e) => setLeadData({...leadData, phone: e.target.value})}
+                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg"
+                                        placeholder="(206) 555-0123"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Best time to reach you?</label>
+                                    <select
+                                        value={leadData.bestTime}
+                                        onChange={(e) => setLeadData({...leadData, bestTime: e.target.value})}
+                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg"
+                                    >
+                                        <option value="morning">Morning (8am-12pm)</option>
+                                        <option value="afternoon">Afternoon (12pm-5pm)</option>
+                                        <option value="evening">Evening (5pm-8pm)</option>
+                                    </select>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition shadow-lg"
+                                >
+                                    Get My Free Package <i className="fas fa-arrow-right ml-2"></i>
+                                </button>
+
+                                <p className="text-xs text-gray-500 text-center">
+                                    By submitting, you agree to receive communications. We respect your privacy and never spam.
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        function ThankYouPage() {
+            return (
+                <section className="py-20 min-h-screen flex items-center bg-gradient-to-br from-blue-50 to-purple-50">
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                        <div className="bg-white rounded-2xl shadow-2xl p-12">
+                            <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i className="fas fa-check text-white text-5xl"></i>
+                            </div>
+                            
+                            <h1 className="text-4xl font-bold mb-4">You're All Set!</h1>
+                            
+                            <p className="text-xl text-gray-600 mb-8">
+                                I've received your information and I'm already preparing your personalized Pre-Listing Package.
+                            </p>
+
+                            <div className="bg-blue-50 rounded-xl p-8 mb-8 text-left">
+                                <h3 className="font-bold text-lg mb-4">What happens next:</h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-start">
+                                        <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold mr-4">1</div>
+                                        <div>
+                                            <h4 className="font-semibold">Within 24 hours</h4>
+                                            <p className="text-gray-600">I'll reach out to schedule your free 30-minute consultation</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start">
+                                        <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold mr-4">2</div>
+                                        <div>
+                                            <h4 className="font-semibold">Before our call</h4>
+                                            <p className="text-gray-600">You'll receive your complete Pre-Listing Package via email</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start">
+                                        <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold mr-4">3</div>
+                                        <div>
+                                            <h4 className="font-semibold">During consultation</h4>
+                                            <p className="text-gray-600">We'll review your package and create your personalized selling strategy</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                <a href="tel:2065550123" className="bg-blue-600 text-white px-8 py-4 rounded-xl font-semibold hover:bg-blue-700 transition inline-flex items-center justify-center">
+                                    <i className="fas fa-phone mr-2"></i>
+                                    Call Me Now: (206) 555-0123
+                                </a>
+                                <button 
+                                    onClick={() => window.location.reload()}
+                                    className="bg-gray-200 text-gray-700 px-8 py-4 rounded-xl font-semibold hover:bg-gray-300 transition"
+                                >
+                                    Calculate Another Property
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        // Helper Components
+        function PackageItem({ icon, title, description, value }) {
+            return (
+                <div className="bg-white rounded-xl p-6 shadow-md card-hover border border-gray-200">
+                    <div className="flex items-start justify-between mb-4">
+                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i className={`fas ${icon} text-blue-600 text-xl`}></i>
+                        </div>
+                        <span className="text-sm font-semibold text-green-600">{value}</span>
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">{title}</h3>
+                    <p className="text-gray-600 text-sm">{description}</p>
+                </div>
+            );
+        }
+
+        function ComparisonCard({ title, items, featured }) {
+            return (
+                <div className={`rounded-xl p-6 ${featured ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-2xl scale-105' : 'bg-white shadow-lg'}`}>
+                    <h3 className={`text-xl font-bold mb-6 text-center ${featured ? 'text-white' : 'text-gray-900'}`}>{title}</h3>
+                    <ul className="space-y-3">
+                        {items.map((item, index) => (
+                            <li key={index} className="flex items-center text-sm">
+                                <i className={`fas ${item.negative ? 'fa-times' : 'fa-check'} ${featured ? 'text-green-300' : item.negative ? 'text-red-500' : 'text-green-500'} mr-3`}></i>
+                                <span className={featured ? 'text-white' : 'text-gray-700'}>{item.text}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            );
+        }
+
+        function TestimonialCard({ name, location, text, rating }) {
+            return (
+                <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+                    <div className="flex items-center text-yellow-400 mb-3">
+                        {[...Array(rating)].map((_, i) => (
+                            <i key={i} className="fas fa-star"></i>
+                        ))}
+                    </div>
+                    <p className="text-gray-700 mb-4 italic">"{text}"</p>
+                    <div className="font-semibold">{name}</div>
+                    <div className="text-sm text-gray-500">{location}</div>
+                </div>
+            );
+        }
+
+        function CalcRow({ label, value, positive, white }) {
+            return (
+                <div className={`flex justify-between items-center py-2 border-b ${white ? 'border-white/20' : 'border-gray-200'}`}>
+                    <span className={white ? 'text-blue-100' : 'text-gray-600'}>{label}</span>
+                    <span className={`font-semibold ${positive ? (white ? 'text-green-300' : 'text-green-600') : (white ? 'text-white' : 'text-gray-900')}`}>
+                        {value}
+                    </span>
+                </div>
+            );
+        }
+
+        function ImprovementCard({ title, investment, return: returnValue, roi, items }) {
+            return (
+                <div className="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
+                    <h4 className="font-bold text-lg mb-2">{title}</h4>
+                    <div className="mb-4">
+                        <div className="text-sm text-gray-600">Investment: <span className="font-semibold text-gray-900">{investment}</span></div>
+                        <div className="text-sm text-gray-600">Added Value: <span className="font-semibold text-green-600">{returnValue}</span></div>
+                        <div className="text-lg font-bold text-blue-600 mt-1">ROI: {roi}</div>
+                    </div>
+                    <ul className="space-y-2">
+                        {items.map((item, index) => (
+                            <li key={index} className="flex items-start text-sm text-gray-700">
+                                <i className="fas fa-check text-green-500 mr-2 mt-0.5"></i>
+                                <span>{item}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            );
+        }
+
+        function Footer() {
+            return (
+                <footer className="bg-gray-900 text-white py-12">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                        <p className="text-gray-400 mb-2">© 2025 Sarah Johnson Real Estate. Licensed WA Realtor.</p>
+                        <p className="text-sm text-gray-500">License #12345678</p>
+                    </div>
+                </footer>
+            );
+        }
+
+        // Render
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
