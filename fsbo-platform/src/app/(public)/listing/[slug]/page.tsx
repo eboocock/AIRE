@@ -20,13 +20,14 @@ import {
 import ContactSellerForm from '@/components/listing/ContactSellerForm'
 import PhotoGallery from '@/components/listing/PhotoGallery'
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
   const supabase = await createClient()
 
   const { data: listing } = await (supabase
     .from('listings') as any)
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'active')
     .single()
 
@@ -50,13 +51,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 }
 
-export default async function PublicListingPage({ params }: { params: { slug: string } }) {
+export default async function PublicListingPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   const supabase = await createClient()
 
   const { data: listing } = await (supabase
     .from('listings') as any)
     .select('*, users(full_name, email, phone)')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'active')
     .single()
 

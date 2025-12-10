@@ -1,7 +1,20 @@
 import Link from 'next/link'
-import { ArrowRight, Home, FileText, BadgeDollarSign, CheckCircle } from 'lucide-react'
+import { ArrowRight, Home, FileText, BadgeDollarSign, CheckCircle, Search, MapPin } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
+import SearchHero from '@/components/home/SearchHero'
+import FeaturedListings from '@/components/home/FeaturedListings'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient()
+
+  // Fetch featured listings (most recent active listings)
+  const { data: featuredListings } = await (supabase
+    .from('listings') as any)
+    .select('*')
+    .eq('status', 'active')
+    .order('published_at', { ascending: false })
+    .limit(6)
+
   return (
     <div className="min-h-screen">
       {/* Navigation */}
@@ -27,27 +40,53 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero Section with Search */}
       <section className="bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 text-white py-20">
         <div className="container">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-5xl font-bold mb-6">
+                Find Your Dream Home in Washington
+              </h2>
+              <p className="text-xl mb-8 text-primary-50">
+                Browse homes for sale by owner. No realtor commissions. Better prices. Direct communication.
+              </p>
+            </div>
+
+            {/* Search Form */}
+            <SearchHero />
+
+            <p className="mt-6 text-sm text-primary-100 text-center">
+              ✓ Direct from owners  ✓ No middleman fees  ✓ Thousands in savings
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Listings */}
+      <FeaturedListings listings={featuredListings || []} />
+
+      {/* Seller CTA Section */}
+      <section className="py-16 bg-primary-50">
+        <div className="container">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-5xl font-bold mb-6">
-              Sell Your Washington Home Without a Realtor
-            </h2>
-            <p className="text-xl mb-8 text-primary-50">
+            <h3 className="text-3xl font-bold text-slate-900 mb-4">
+              Want to Sell Your Home?
+            </h3>
+            <p className="text-xl text-slate-600 mb-6">
               List for free. Pay only when you're ready to accept offers and close.
               Save thousands in commission fees with AIRE's complete FSBO platform.
             </p>
             <div className="flex gap-4 justify-center">
-              <Link href="/register" className="bg-white text-primary-600 hover:bg-primary-50 font-bold py-4 px-8 rounded-lg transition-colors inline-flex items-center gap-2">
+              <Link href="/register" className="btn-primary inline-flex items-center gap-2">
                 Start Listing for Free
                 <ArrowRight className="w-5 h-5" />
               </Link>
-              <Link href="#how-it-works" className="border-2 border-white hover:bg-white/10 font-semibold py-4 px-8 rounded-lg transition-colors">
+              <Link href="#how-it-works" className="btn-outline">
                 Learn More
               </Link>
             </div>
-            <p className="mt-6 text-sm text-primary-100">
+            <p className="mt-4 text-sm text-slate-500">
               ✓ No credit card required  ✓ List in minutes  ✓ Cancel anytime
             </p>
           </div>

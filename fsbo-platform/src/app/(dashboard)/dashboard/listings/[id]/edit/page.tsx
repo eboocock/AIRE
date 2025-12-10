@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import EditListingClient from '@/components/listing/EditListingClient'
 
-export default async function EditListingPage({ params }: { params: { id: string } }) {
+export default async function EditListingPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
 
   const {
@@ -17,7 +18,7 @@ export default async function EditListingPage({ params }: { params: { id: string
   const { data: listing, error } = await (supabase
     .from('listings') as any)
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('user_id', session.user.id) // Ensure user owns this listing
     .single()
 
