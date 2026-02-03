@@ -508,21 +508,53 @@
             const [address, setAddress] = useState('');
             const [foundListing, setFoundListing] = useState(null);
             const [photos, setPhotos] = useState([]);
+            const [editingValue, setEditingValue] = useState(false);
+            const [customValue, setCustomValue] = useState('');
+
+            // Calculate estimated value based on location and sqft
+            // WA median price/sqft varies: Seattle ~$550, Eastside ~$600, Sammamish ~$580
+            const calculateEstimate = (sqft, addressStr) => {
+                const addr = addressStr.toLowerCase();
+                let pricePerSqft = 450; // Default WA
+
+                // Adjust for high-value areas
+                if (addr.includes('sammamish') || addr.includes('98075')) pricePerSqft = 580;
+                else if (addr.includes('bellevue') || addr.includes('98004') || addr.includes('98005')) pricePerSqft = 650;
+                else if (addr.includes('medina') || addr.includes('98039')) pricePerSqft = 1200;
+                else if (addr.includes('mercer island') || addr.includes('98040')) pricePerSqft = 700;
+                else if (addr.includes('kirkland') || addr.includes('98033')) pricePerSqft = 600;
+                else if (addr.includes('redmond') || addr.includes('98052')) pricePerSqft = 550;
+                else if (addr.includes('seattle') || addr.includes('98')) pricePerSqft = 500;
+                else if (addr.includes('tacoma')) pricePerSqft = 350;
+
+                return Math.round(sqft * pricePerSqft / 1000) * 1000; // Round to nearest 1000
+            };
 
             const searchAddress = () => {
-                // Simulate finding previous listing
+                // Simulate finding previous listing with realistic estimates
                 if (address.length > 5) {
+                    const sqft = 2450; // Would come from property records API
+                    const estimatedValue = calculateEstimate(sqft, address);
+
                     setFoundListing({
                         address: address,
                         beds: 4,
                         baths: 2.5,
-                        sqft: 2450,
-                        lastSold: '2019',
-                        lastPrice: 425000,
-                        estimatedValue: 525000
+                        sqft: sqft,
+                        estimatedValue: estimatedValue
                     });
+                    setCustomValue(estimatedValue.toString());
                 }
                 setStep(2);
+            };
+
+            const updateEstimatedValue = (newValue) => {
+                const numValue = parseInt(newValue.replace(/,/g, ''));
+                if (!isNaN(numValue) && numValue > 0) {
+                    setFoundListing({...foundListing, estimatedValue: numValue});
+                    setCustomValue(numValue.toString());
+                }
+                setEditingValue(false);
             };
 
             return (
@@ -600,8 +632,39 @@
                                             </div>
                                         </div>
                                         <div className="mt-4 pt-4 border-t border-gray-700">
-                                            <div className="text-gray-400 text-sm">Estimated Value</div>
-                                            <div className="text-3xl font-bold gradient-text">${foundListing.estimatedValue.toLocaleString()}</div>
+                                            <div className="flex justify-between items-center mb-1">
+                                                <div className="text-gray-400 text-sm">Estimated Market Value</div>
+                                                <button
+                                                    onClick={() => setEditingValue(true)}
+                                                    className="text-aire-400 text-xs hover:text-aire-300 transition"
+                                                >
+                                                    <i className="fas fa-pencil-alt mr-1"></i>Adjust
+                                                </button>
+                                            </div>
+                                            {editingValue ? (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-2xl font-bold text-white">$</span>
+                                                    <input
+                                                        type="text"
+                                                        value={customValue}
+                                                        onChange={(e) => setCustomValue(e.target.value.replace(/[^0-9]/g, ''))}
+                                                        className="flex-1 bg-gray-700 border border-aire-500 rounded-lg px-3 py-2 text-2xl font-bold text-white focus:outline-none"
+                                                        autoFocus
+                                                    />
+                                                    <button
+                                                        onClick={() => updateEstimatedValue(customValue)}
+                                                        className="bg-aire-500 hover:bg-aire-600 text-white px-4 py-2 rounded-lg font-semibold transition"
+                                                    >
+                                                        Save
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="text-3xl font-bold gradient-text">${foundListing.estimatedValue.toLocaleString()}</div>
+                                            )}
+                                            <div className="text-gray-500 text-xs mt-2">
+                                                <i className="fas fa-info-circle mr-1"></i>
+                                                Based on recent sales in your area. Our AI will refine this with a full market analysis.
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -675,11 +738,11 @@
                                 <div className="bg-gray-800/50 rounded-2xl p-6 mb-6">
                                     <div className="flex justify-between items-center mb-4">
                                         <span className="text-gray-400">AI-Recommended Price</span>
-                                        <span className="text-2xl font-bold text-white">$525,000</span>
+                                        <span className="text-2xl font-bold text-white">${foundListing?.estimatedValue?.toLocaleString() || '0'}</span>
                                     </div>
                                     <div className="flex justify-between items-center mb-4">
                                         <span className="text-gray-400">Traditional Agent Fee (6%)</span>
-                                        <span className="text-red-400 line-through">$31,500</span>
+                                        <span className="text-red-400 line-through">${Math.round((foundListing?.estimatedValue || 0) * 0.06).toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between items-center pt-4 border-t border-gray-700">
                                         <span className="text-gray-400">AIRE Fee</span>
@@ -689,7 +752,7 @@
 
                                 <div className="text-center mb-6 p-4 bg-aire-500/10 rounded-xl border border-aire-500/30">
                                     <div className="text-aire-400 font-semibold">You Save</div>
-                                    <div className="text-3xl font-black text-white">$31,001</div>
+                                    <div className="text-3xl font-black text-white">${(Math.round((foundListing?.estimatedValue || 0) * 0.06) - 499).toLocaleString()}</div>
                                 </div>
 
                                 <button
@@ -749,7 +812,7 @@
                                 </div>
                                 <div className="mt-4 md:mt-0 text-right">
                                     <div className="text-white/70 text-sm">Listed Price</div>
-                                    <div className="text-4xl font-black text-white">$525,000</div>
+                                    <div className="text-4xl font-black text-white">${listingData?.foundListing?.estimatedValue?.toLocaleString() || '0'}</div>
                                 </div>
                             </div>
                         </div>
