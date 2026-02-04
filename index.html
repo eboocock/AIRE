@@ -647,60 +647,6 @@ Located in a top-rated school district with easy access to tech hubs, shopping, 
                         </div>
                     </section>
 
-                    {/* How It Works - Simplified */}
-                    <section id="how-it-works" className="py-16 px-4">
-                        <div className="max-w-4xl mx-auto">
-                            <div className="text-center mb-12">
-                                <h2 className="text-4xl md:text-5xl font-bold mb-4">
-                                    Calculate Your <span className="gradient-text">Savings</span>
-                                </h2>
-                                <p className="text-gray-400 text-lg">See how much you keep with AIRE vs. a traditional agent</p>
-                            </div>
-
-                            <div className="bg-gray-900 border border-gray-800 rounded-3xl p-8 glow">
-                                <div className="mb-8">
-                                    <label className="block text-sm font-medium text-gray-400 mb-3">Your Home Value</label>
-                                    <input
-                                        type="range"
-                                        min="200000"
-                                        max="2000000"
-                                        step="10000"
-                                        value={savingsInput}
-                                        onChange={(e) => setSavingsInput(parseInt(e.target.value))}
-                                        className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-aire-500"
-                                    />
-                                    <div className="text-center text-3xl font-bold mt-4 text-white">
-                                        ${savingsInput.toLocaleString()}
-                                    </div>
-                                </div>
-
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
-                                        <div className="text-gray-400 text-sm mb-2">Traditional Agent (6%)</div>
-                                        <div className="text-3xl font-bold text-red-400">
-                                            -${traditionalFee.toLocaleString()}
-                                        </div>
-                                        <div className="text-gray-500 text-sm mt-2">in commission fees</div>
-                                    </div>
-                                    <div className="bg-gradient-to-br from-aire-600/20 to-aire-800/20 rounded-2xl p-6 border border-aire-500/30">
-                                        <div className="text-aire-400 text-sm mb-2">AIRE Flat Fee</div>
-                                        <div className="text-3xl font-bold text-white">
-                                            ${aireFee.toLocaleString()}
-                                        </div>
-                                        <div className="text-gray-500 text-sm mt-2">one-time fee at closing</div>
-                                    </div>
-                                </div>
-
-                                <div className="mt-8 text-center">
-                                    <div className="text-gray-400 mb-2">You Save With AIRE</div>
-                                    <div className="text-5xl md:text-6xl font-black gradient-text">
-                                        ${savings.toLocaleString()}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
                     {/* How It Works */}
                     <section id="how-it-works" className="py-20 px-4">
                         <div className="max-w-6xl mx-auto">
