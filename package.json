@@ -1,25 +1,41 @@
 {
   "name": "aire-ai-real-estate",
   "version": "1.0.0",
-  "description": "AIRE - AI Real Estate Platform. Sell your home with AI, save the 6% commission.",
+  "description": "AIRE - AI Real Estate Platform. Your AI-powered real estate agent.",
+  "private": true,
   "scripts": {
-    "dev": "netlify dev",
-    "build": "echo 'Static site - no build required'",
-    "start": "npx serve ."
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > src/types/database.ts",
+    "db:migrate": "supabase db push",
+    "db:reset": "supabase db reset"
   },
-  "keywords": [
-    "real-estate",
-    "ai",
-    "property-valuation",
-    "fsbo",
-    "home-selling"
-  ],
-  "author": "AIRE Technologies",
-  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "@supabase/ssr": "^0.1.0",
+    "@stripe/stripe-js": "^2.2.0",
+    "next": "14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "stripe": "^14.10.0",
+    "zod": "^3.22.4",
+    "date-fns": "^3.2.0",
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.2.0"
+  },
   "devDependencies": {
-    "netlify-cli": "^17.0.0"
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.0",
+    "supabase": "^1.127.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.17.0"
   }
 }
