@@ -1,0 +1,25 @@
+{
+  "name": "aire-ai-real-estate",
+  "version": "1.0.0",
+  "description": "AIRE - AI Real Estate Platform. Sell your home with AI, save the 6% commission.",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'Static site - no build required'",
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "real-estate",
+    "ai",
+    "property-valuation",
+    "fsbo",
+    "home-selling"
+  ],
+  "author": "AIRE Technologies",
+  "license": "MIT",
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
