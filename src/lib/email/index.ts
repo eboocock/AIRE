@@ -45,14 +45,14 @@ export async function sendEmail({ to, subject, html, text }: EmailOptions): Prom
 // Email templates
 export function welcomeEmail(name: string): { subject: string; html: string } {
   return {
-    subject: 'Welcome to AIREA - Your AI Real Estate Agent',
+    subject: 'Welcome to AIREA - AI-Powered FSBO Tools',
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #22c55e;">Welcome to AIREA!</h1>
         <p>Hi ${name},</p>
-        <p>You're now ready to sell your home with the power of AI. Here's what you can do:</p>
+        <p>You're now ready to sell your home FSBO with AI-powered tools. Here's what you can do:</p>
         <ul>
-          <li>Get an instant AI property valuation</li>
+          <li>Get an instant AI property estimate</li>
           <li>Create a professional listing in minutes</li>
           <li>Manage offers and showings from your dashboard</li>
         </ul>

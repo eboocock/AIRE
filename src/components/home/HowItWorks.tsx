@@ -1,9 +1,9 @@
 export function HowItWorks() {
   const steps = [
-    { number: '1', icon: 'fa-camera', title: 'Create Listing', description: 'Import from previous listing or snap new photos. AIREA writes your listing automatically.' },
-    { number: '2', icon: 'fa-chart-line', title: 'AI Pricing', description: 'Our AI analyzes comparable sales, market trends, and buyer demand to price perfectly.' },
-    { number: '3', icon: 'fa-bullhorn', title: 'Smart Marketing', description: 'Listed on MLS, Zillow, Redfin, and 100+ sites. Targeted ads find serious buyers.' },
-    { number: '4', icon: 'fa-handshake', title: 'Close & Celebrate', description: 'AIREA coordinates showings, negotiations, and paperwork. Sign digitally and close.' },
+    { number: '1', icon: 'fa-home', title: 'Enter Your Address', description: 'Get a free AI property estimate and see how much you could save selling FSBO.' },
+    { number: '2', icon: 'fa-pen', title: 'Create Your Listing', description: 'Our AI writes a professional listing description. Add photos and set your price.' },
+    { number: '3', icon: 'fa-calendar-check', title: 'Manage Showings & Offers', description: 'Coordinate showings from your dashboard. Review and compare offers as they come in.' },
+    { number: '4', icon: 'fa-handshake', title: 'Close the Sale', description: 'Use our document templates and close on your terms. We recommend consulting an attorney.' },
   ];
 
   return (
@@ -11,9 +11,9 @@ export function HowItWorks() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Sell in <span className="gradient-text">4 Simple Steps</span>
+            Sell FSBO in <span className="gradient-text">4 Simple Steps</span>
           </h2>
-          <p className="text-gray-400 text-lg">From listing to closing, AIREA handles everything</p>
+          <p className="text-gray-400 text-lg">AIREA gives you the tools — you make the decisions</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">

@@ -1,14 +1,14 @@
 export function Features() {
   const features = [
-    { icon: 'fa-magic', title: 'AI Listing Writer', description: 'Upload photos, AIREA creates compelling descriptions that sell.' },
-    { icon: 'fa-search-dollar', title: 'Smart Pricing', description: 'Real-time market analysis ensures you price right from day one.' },
-    { icon: 'fa-ad', title: 'Automated Marketing', description: 'Syndicated to 100+ sites with targeted social media campaigns.' },
-    { icon: 'fa-calendar-check', title: 'Showing Coordinator', description: 'Buyers book directly. You approve. Smart lockbox handles access.' },
-    { icon: 'fa-comments-dollar', title: 'Offer Negotiation', description: 'AI analyzes every offer and helps you negotiate the best terms.' },
-    { icon: 'fa-file-signature', title: 'Digital Documents', description: 'All contracts and disclosures. Review and e-sign from your phone.' },
-    { icon: 'fa-user-tie', title: 'Human Support', description: 'Licensed agents available when you need expert guidance.' },
-    { icon: 'fa-shield-alt', title: 'Legal Compliance', description: 'State-specific forms and disclosures handled automatically.' },
-    { icon: 'fa-mobile-alt', title: 'Mobile First', description: 'Manage your entire sale from your phone. Anytime, anywhere.' },
+    { icon: 'fa-brain', title: 'AI Property Estimates', description: 'Get an instant estimate based on comparable sales and market data.' },
+    { icon: 'fa-magic', title: 'AI Listing Writer', description: 'Upload photos and let AI create a compelling listing description.' },
+    { icon: 'fa-search-dollar', title: 'Pricing Insights', description: 'See comparable sales and market trends to help you set the right price.' },
+    { icon: 'fa-calendar-check', title: 'Showing Scheduler', description: 'Buyers request showings. You approve or suggest a different time.' },
+    { icon: 'fa-comments-dollar', title: 'Offer Management', description: 'Review, compare, and respond to offers from your dashboard.' },
+    { icon: 'fa-file-alt', title: 'Document Templates', description: 'Access Washington State FSBO document templates. Consult an attorney for legal advice.' },
+    { icon: 'fa-camera', title: 'Photo Management', description: 'Upload, organize, and showcase your property photos.' },
+    { icon: 'fa-shield-alt', title: 'WA State Resources', description: 'Links to official Washington State seller disclosure forms and requirements.' },
+    { icon: 'fa-mobile-alt', title: 'Mobile Friendly', description: 'Manage your listing from any device. Review offers on the go.' },
   ];
 
   return (
@@ -16,10 +16,11 @@ export function Features() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Everything a Realtor Does.
+            AI-Powered Tools for
             <br />
-            <span className="gradient-text">Without the Realtor.</span>
+            <span className="gradient-text">FSBO Sellers</span>
           </h2>
+          <p className="text-gray-400 text-lg">Everything you need to sell your home yourself</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
