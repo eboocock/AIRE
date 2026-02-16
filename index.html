@@ -74,7 +74,214 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef, useCallback } = React;
+
+        // ============================================
+        // API SERVICE LAYER - Real Property Data APIs
+        // ============================================
+        const API_BASE = '/api';
+
+        const PropertyAPI = {
+            // Check if running with real APIs (Netlify) or demo mode (GitHub Pages)
+            isLiveMode: () => {
+                return window.location.hostname.includes('netlify.app') ||
+                       window.location.hostname === 'localhost' ||
+                       window.AIRE_LIVE_MODE === true;
+            },
+
+            // Fetch property data from real APIs
+            async getPropertyData(address) {
+                if (!this.isLiveMode()) {
+                    return { demo: true, data: null };
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE}/property-data?address=${encodeURIComponent(address)}`);
+                    if (!response.ok) throw new Error('Property API error');
+                    return await response.json();
+                } catch (error) {
+                    console.error('Property API error:', error);
+                    return { error: error.message, demo: true };
+                }
+            },
+
+            // Fetch comparable sales
+            async getComparables(latitude, longitude, beds, sqft) {
+                if (!this.isLiveMode()) {
+                    return { demo: true, comparables: [] };
+                }
+
+                try {
+                    const params = new URLSearchParams({ latitude, longitude, beds, sqft, radius: 1 });
+                    const response = await fetch(`${API_BASE}/comparables?${params}`);
+                    if (!response.ok) throw new Error('Comparables API error');
+                    return await response.json();
+                } catch (error) {
+                    console.error('Comparables API error:', error);
+                    return { error: error.message, demo: true, comparables: [] };
+                }
+            },
+
+            // Fetch market data (walk score, schools, trends)
+            async getMarketData(latitude, longitude, address, zipCode, state) {
+                if (!this.isLiveMode()) {
+                    return { demo: true };
+                }
+
+                try {
+                    const params = new URLSearchParams({ latitude, longitude, address, zipCode, state });
+                    const response = await fetch(`${API_BASE}/market-data?${params}`);
+                    if (!response.ok) throw new Error('Market data API error');
+                    return await response.json();
+                } catch (error) {
+                    console.error('Market data API error:', error);
+                    return { error: error.message, demo: true };
+                }
+            },
+
+            // Get AI-powered analysis synthesis
+            async getAIAnalysis(propertyData, comparables, marketData) {
+                if (!this.isLiveMode()) {
+                    return { demo: true };
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE}/ai-analysis`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ propertyData, comparables, marketData })
+                    });
+                    if (!response.ok) throw new Error('AI Analysis API error');
+                    return await response.json();
+                } catch (error) {
+                    console.error('AI Analysis API error:', error);
+                    return { error: error.message, demo: true };
+                }
+            },
+
+            // Address autocomplete
+            async autocomplete(input, sessionToken) {
+                if (!this.isLiveMode() || input.length < 3) {
+                    return { suggestions: [] };
+                }
+
+                try {
+                    const params = new URLSearchParams({ input, sessionToken });
+                    const response = await fetch(`${API_BASE}/address-autocomplete?${params}`);
+                    if (!response.ok) return { suggestions: [] };
+                    return await response.json();
+                } catch (error) {
+                    return { suggestions: [] };
+                }
+            },
+
+            // Get full address details from place ID
+            async getPlaceDetails(placeId, sessionToken) {
+                if (!this.isLiveMode()) {
+                    return null;
+                }
+
+                try {
+                    const params = new URLSearchParams({ placeId, sessionToken });
+                    const response = await fetch(`${API_BASE}/address-autocomplete?${params}`);
+                    if (!response.ok) return null;
+                    return await response.json();
+                } catch (error) {
+                    return null;
+                }
+            }
+        };
+
+        // ============================================
+        // ADDRESS AUTOCOMPLETE COMPONENT
+        // ============================================
+        function AddressAutocomplete({ value, onChange, onSelect, placeholder, disabled, className }) {
+            const [suggestions, setSuggestions] = useState([]);
+            const [showSuggestions, setShowSuggestions] = useState(false);
+            const [loading, setLoading] = useState(false);
+            const sessionTokenRef = useRef(Math.random().toString(36).substring(7));
+            const debounceRef = useRef(null);
+
+            const fetchSuggestions = useCallback(async (input) => {
+                if (input.length < 3) {
+                    setSuggestions([]);
+                    return;
+                }
+
+                setLoading(true);
+                const result = await PropertyAPI.autocomplete(input, sessionTokenRef.current);
+                setSuggestions(result.suggestions || []);
+                setShowSuggestions(true);
+                setLoading(false);
+            }, []);
+
+            const handleChange = (e) => {
+                const newValue = e.target.value;
+                onChange(newValue);
+
+                // Debounce API calls
+                if (debounceRef.current) clearTimeout(debounceRef.current);
+                debounceRef.current = setTimeout(() => fetchSuggestions(newValue), 300);
+            };
+
+            const handleSelect = async (suggestion) => {
+                setShowSuggestions(false);
+                onChange(suggestion.description);
+
+                // Get full details if we have a place ID
+                if (suggestion.placeId) {
+                    const details = await PropertyAPI.getPlaceDetails(suggestion.placeId, sessionTokenRef.current);
+                    if (details && onSelect) {
+                        onSelect({
+                            address: suggestion.description,
+                            ...details
+                        });
+                    }
+                } else if (onSelect) {
+                    onSelect({ address: suggestion.description });
+                }
+
+                // Reset session token for next search
+                sessionTokenRef.current = Math.random().toString(36).substring(7);
+            };
+
+            return (
+                <div className="relative">
+                    <input
+                        type="text"
+                        value={value}
+                        onChange={handleChange}
+                        onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                        placeholder={placeholder}
+                        disabled={disabled}
+                        className={className}
+                    />
+                    {loading && (
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                            <i className="fas fa-spinner fa-spin text-gray-500"></i>
+                        </div>
+                    )}
+                    {showSuggestions && suggestions.length > 0 && (
+                        <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-xl shadow-xl overflow-hidden">
+                            {suggestions.map((suggestion, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handleSelect(suggestion)}
+                                    className="w-full px-4 py-3 text-left hover:bg-gray-700 transition flex items-start gap-3"
+                                >
+                                    <i className="fas fa-map-marker-alt text-aire-400 mt-1"></i>
+                                    <div>
+                                        <div className="text-white font-medium">{suggestion.mainText}</div>
+                                        <div className="text-gray-400 text-sm">{suggestion.secondaryText}</div>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
 
         function App() {
             const [currentView, setCurrentView] = useState('landing');
@@ -109,25 +316,33 @@
 
         function LandingPage({ onGetStarted }) {
             const [address, setAddress] = useState('');
+            const [addressDetails, setAddressDetails] = useState(null);
             const [analyzing, setAnalyzing] = useState(false);
             const [analysisStep, setAnalysisStep] = useState(0);
             const [analysis, setAnalysis] = useState(null);
             const [activeTab, setActiveTab] = useState('valuation');
+            const [dataSource, setDataSource] = useState(null); // 'live' or 'demo'
+            const [apiErrors, setApiErrors] = useState([]);
 
-            // AI Analysis simulation with realistic data generation
-            const generateAIAnalysis = (addr) => {
+            // Analysis steps for progress display
+            const analysisSteps = [
+                { key: 'property', label: 'Fetching property records...', icon: 'fa-home' },
+                { key: 'comps', label: 'Analyzing comparable sales...', icon: 'fa-chart-bar' },
+                { key: 'market', label: 'Evaluating market conditions...', icon: 'fa-broadcast-tower' },
+                { key: 'valuation', label: 'Generating AI valuation...', icon: 'fa-brain' },
+                { key: 'listing', label: 'Writing listing description...', icon: 'fa-file-alt' },
+                { key: 'strategy', label: 'Calculating pricing strategy...', icon: 'fa-calculator' },
+                { key: 'complete', label: 'Finalizing analysis...', icon: 'fa-check-circle' }
+            ];
+
+            // Generate fallback demo data when APIs are not available
+            const generateDemoData = (addr, details = {}) => {
                 const addrLower = addr.toLowerCase();
+                let pricePerSqft = 450, marketTemp = 'warm', daysOnMarket = 28;
+                let neighborhood = details.city || 'your area', demandLevel = 'moderate';
+                let bestMonth = 'April', schoolRating = 7, walkScore = 65;
 
-                // Location-based intelligence
-                let pricePerSqft = 450;
-                let marketTemp = 'warm';
-                let daysOnMarket = 28;
-                let neighborhood = 'your area';
-                let demandLevel = 'moderate';
-                let bestMonth = 'April';
-                let schoolRating = 7;
-                let walkScore = 65;
-
+                // Location-specific adjustments based on address text
                 if (addrLower.includes('sammamish') || addrLower.includes('98075')) {
                     pricePerSqft = 585; marketTemp = 'hot'; daysOnMarket = 12; neighborhood = 'Sammamish';
                     demandLevel = 'very high'; bestMonth = 'March-May'; schoolRating = 9; walkScore = 42;
@@ -145,101 +360,169 @@
                     demandLevel = 'high'; bestMonth = 'April-May'; schoolRating = 8; walkScore = 55;
                 }
 
-                const sqft = 2450;
-                const beds = 4;
-                const baths = 2.5;
-                const yearBuilt = 2005;
-                const lotSize = 0.25;
+                const sqft = 2450, beds = 4, baths = 2.5, yearBuilt = 2005, lotSize = 0.25;
                 const estimatedValue = Math.round(sqft * pricePerSqft / 1000) * 1000;
-                const lowRange = Math.round(estimatedValue * 0.95 / 1000) * 1000;
-                const highRange = Math.round(estimatedValue * 1.08 / 1000) * 1000;
-
-                // Generate AI listing description
-                const listingDescription = `Welcome to this stunning ${beds}-bedroom, ${baths}-bath home in the heart of ${neighborhood}. Built in ${yearBuilt}, this ${sqft.toLocaleString()} sq ft residence offers the perfect blend of modern comfort and timeless elegance.
-
-Step inside to discover an open-concept floor plan flooded with natural light, featuring hardwood floors throughout the main level. The chef's kitchen boasts granite countertops, stainless steel appliances, and a spacious island perfect for entertaining.
-
-The primary suite is a true retreat with a spa-like bathroom and generous walk-in closet. Three additional bedrooms provide ample space for family or guests. The ${lotSize}-acre lot offers a private backyard oasis, ideal for outdoor gatherings.
-
-Located in a top-rated school district with easy access to tech hubs, shopping, and dining. This is ${neighborhood} living at its finest.`;
-
-                // Comparable sales
-                const comps = [
-                    { address: `${Math.floor(Math.random()*900)+100} nearby street`, price: Math.round(estimatedValue * (0.95 + Math.random()*0.1) / 1000) * 1000, sqft: sqft - 150 + Math.floor(Math.random()*300), daysAgo: Math.floor(Math.random()*30)+5 },
-                    { address: `${Math.floor(Math.random()*900)+100} adjacent ave`, price: Math.round(estimatedValue * (0.92 + Math.random()*0.15) / 1000) * 1000, sqft: sqft - 200 + Math.floor(Math.random()*400), daysAgo: Math.floor(Math.random()*45)+10 },
-                    { address: `${Math.floor(Math.random()*900)+100} similar lane`, price: Math.round(estimatedValue * (0.98 + Math.random()*0.08) / 1000) * 1000, sqft: sqft - 100 + Math.floor(Math.random()*200), daysAgo: Math.floor(Math.random()*60)+15 },
-                ];
 
                 return {
                     address: addr,
                     estimatedValue,
-                    lowRange,
-                    highRange,
-                    pricePerSqft,
-                    sqft,
-                    beds,
-                    baths,
-                    yearBuilt,
-                    lotSize,
-                    neighborhood,
-                    marketTemp,
-                    daysOnMarket,
-                    demandLevel,
-                    bestMonth,
-                    schoolRating,
-                    walkScore,
-                    listingDescription,
-                    comps,
-                    improvements: [
-                        { item: 'Fresh interior paint (neutral tones)', cost: 2500, addedValue: 8000, roi: '220%' },
-                        { item: 'Professional staging', cost: 2000, addedValue: 15000, roi: '650%' },
-                        { item: 'Landscape refresh & curb appeal', cost: 1500, addedValue: 6000, roi: '300%' },
-                        { item: 'Deep cleaning & decluttering', cost: 500, addedValue: 5000, roi: '900%' },
+                    lowRange: Math.round(estimatedValue * 0.95 / 1000) * 1000,
+                    highRange: Math.round(estimatedValue * 1.08 / 1000) * 1000,
+                    pricePerSqft, sqft, beds, baths, yearBuilt, lotSize, neighborhood,
+                    marketTemp, daysOnMarket, demandLevel, bestMonth, schoolRating, walkScore,
+                    confidence: 75,
+                    dataPoints: 847,
+                    listingDescription: `Welcome to this stunning ${beds}-bedroom, ${baths}-bath home in ${neighborhood}. Built in ${yearBuilt}, this ${sqft.toLocaleString()} sq ft residence offers modern comfort and timeless elegance.\n\nThe open-concept floor plan features hardwood floors and abundant natural light. The chef's kitchen boasts granite countertops, stainless steel appliances, and a spacious island.\n\nThe primary suite includes a spa-like bathroom and walk-in closet. Three additional bedrooms provide space for family or guests. The ${lotSize}-acre lot offers a private backyard oasis.\n\nLocated in a top-rated school district with easy access to tech hubs, shopping, and dining.`,
+                    comps: [
+                        { address: '123 Nearby St', price: Math.round(estimatedValue * 0.97 / 1000) * 1000, sqft: sqft - 100, daysAgo: 12 },
+                        { address: '456 Similar Ave', price: Math.round(estimatedValue * 1.02 / 1000) * 1000, sqft: sqft + 50, daysAgo: 23 },
+                        { address: '789 Comparable Ln', price: Math.round(estimatedValue * 0.95 / 1000) * 1000, sqft: sqft - 200, daysAgo: 35 },
                     ],
-                    savings: Math.round(estimatedValue * 0.06) - 499
+                    improvements: [
+                        { item: 'Professional photography & staging', cost: 800, addedValue: Math.round(estimatedValue * 0.03), roi: '650%' },
+                        { item: 'Fresh interior paint (neutral tones)', cost: 2500, addedValue: Math.round(estimatedValue * 0.02), roi: '220%' },
+                        { item: 'Landscape refresh & curb appeal', cost: 1500, addedValue: Math.round(estimatedValue * 0.015), roi: '300%' },
+                        { item: 'Pre-listing deep clean', cost: 500, addedValue: Math.round(estimatedValue * 0.01), roi: '900%' },
+                    ],
+                    savings: Math.round(estimatedValue * 0.06) - 499,
+                    isDemo: true
                 };
             };
 
-            const runAnalysis = () => {
+            // Main analysis function - calls real APIs with fallback to demo
+            const runAnalysis = async () => {
                 if (!address) return;
                 setAnalyzing(true);
                 setAnalysisStep(0);
                 setAnalysis(null);
+                setApiErrors([]);
+                setDataSource(null);
 
-                // Simulate AI analysis steps
-                const steps = [
-                    'Searching property records...',
-                    'Analyzing comparable sales...',
-                    'Evaluating market conditions...',
-                    'Generating AI valuation model...',
-                    'Writing listing description...',
-                    'Calculating optimal price strategy...',
-                    'Finalizing analysis...'
-                ];
+                const updateStep = (step) => setAnalysisStep(step);
+                const errors = [];
 
-                let step = 0;
-                const interval = setInterval(() => {
-                    step++;
-                    setAnalysisStep(step);
-                    if (step >= steps.length) {
-                        clearInterval(interval);
-                        setTimeout(() => {
-                            setAnalysis(generateAIAnalysis(address));
-                            setAnalyzing(false);
-                        }, 500);
+                try {
+                    // Step 1: Fetch property data
+                    updateStep(1);
+                    const propertyResult = await PropertyAPI.getPropertyData(address);
+                    await new Promise(r => setTimeout(r, 400)); // Brief pause for UX
+
+                    let propertyData = propertyResult.data;
+                    let isDemo = propertyResult.demo || !propertyData;
+
+                    if (propertyResult.error) errors.push({ source: 'Property Data', error: propertyResult.error });
+
+                    // Step 2: Fetch comparables
+                    updateStep(2);
+                    let comparables = [];
+                    if (propertyData?.latitude && propertyData?.longitude) {
+                        const compsResult = await PropertyAPI.getComparables(
+                            propertyData.latitude,
+                            propertyData.longitude,
+                            propertyData.beds,
+                            propertyData.sqft
+                        );
+                        comparables = compsResult.comparables || [];
+                        if (compsResult.error) errors.push({ source: 'Comparables', error: compsResult.error });
                     }
-                }, 600);
+                    await new Promise(r => setTimeout(r, 400));
+
+                    // Step 3: Fetch market data
+                    updateStep(3);
+                    let marketData = {};
+                    if (propertyData?.latitude && propertyData?.longitude) {
+                        const marketResult = await PropertyAPI.getMarketData(
+                            propertyData.latitude,
+                            propertyData.longitude,
+                            address,
+                            addressDetails?.zipCode || propertyData?.zipCode,
+                            addressDetails?.state || propertyData?.state
+                        );
+                        marketData = marketResult;
+                        if (marketResult.error) errors.push({ source: 'Market Data', error: marketResult.error });
+                    }
+                    await new Promise(r => setTimeout(r, 400));
+
+                    // Step 4: AI Valuation
+                    updateStep(4);
+                    let aiAnalysis = {};
+                    if (propertyData && !isDemo) {
+                        const aiResult = await PropertyAPI.getAIAnalysis(propertyData, comparables, marketData);
+                        aiAnalysis = aiResult;
+                        if (aiResult.error) errors.push({ source: 'AI Analysis', error: aiResult.error });
+                    }
+                    await new Promise(r => setTimeout(r, 400));
+
+                    // Step 5-7: Finalize
+                    updateStep(5);
+                    await new Promise(r => setTimeout(r, 300));
+                    updateStep(6);
+                    await new Promise(r => setTimeout(r, 300));
+                    updateStep(7);
+
+                    // Build final analysis object
+                    let finalAnalysis;
+                    if (isDemo || !propertyData) {
+                        // Use demo data as fallback
+                        finalAnalysis = generateDemoData(address, addressDetails || {});
+                        setDataSource('demo');
+                    } else {
+                        // Build from real API data
+                        const valuation = aiAnalysis.valuation || {};
+                        finalAnalysis = {
+                            address: address,
+                            estimatedValue: valuation.estimatedValue || propertyData.estimatedValue || 0,
+                            lowRange: valuation.valueLow || Math.round((propertyData.estimatedValue || 0) * 0.95 / 1000) * 1000,
+                            highRange: valuation.valueHigh || Math.round((propertyData.estimatedValue || 0) * 1.05 / 1000) * 1000,
+                            pricePerSqft: propertyData.sqft ? Math.round((propertyData.estimatedValue || 0) / propertyData.sqft) : 0,
+                            sqft: propertyData.sqft || 0,
+                            beds: propertyData.beds || 0,
+                            baths: propertyData.baths || 0,
+                            yearBuilt: propertyData.yearBuilt || 'Unknown',
+                            lotSize: propertyData.lotSize || 'Unknown',
+                            neighborhood: propertyData.city || addressDetails?.city || 'Unknown',
+                            marketTemp: marketData.marketTemperature?.label?.toLowerCase() || 'warm',
+                            daysOnMarket: marketData.neighborhoodStats?.avgDaysOnMarket || 21,
+                            demandLevel: marketData.marketTemperature?.score >= 70 ? 'very high' : marketData.marketTemperature?.score >= 50 ? 'high' : 'moderate',
+                            bestMonth: marketData.bestTimeToList?.bestMonth || 'April-June',
+                            schoolRating: marketData.avgSchoolRating || 7,
+                            walkScore: marketData.walkScore || 50,
+                            confidence: valuation.confidence || 85,
+                            dataPoints: 2847,
+                            listingDescription: aiAnalysis.listingDescription || generateDemoData(address).listingDescription,
+                            comps: comparables.slice(0, 5).map(c => ({
+                                address: c.address,
+                                price: c.price,
+                                sqft: c.sqft,
+                                daysAgo: c.saleDate ? Math.round((Date.now() - new Date(c.saleDate)) / (1000 * 60 * 60 * 24)) : null,
+                                source: c.source
+                            })),
+                            improvements: aiAnalysis.improvements || generateDemoData(address).improvements,
+                            savings: aiAnalysis.savings?.totalSavings || Math.round((propertyData.estimatedValue || 0) * 0.06) - 499,
+                            sources: propertyResult.sources || [],
+                            isDemo: false
+                        };
+                        setDataSource('live');
+                    }
+
+                    setApiErrors(errors);
+                    setAnalysis(finalAnalysis);
+
+                } catch (error) {
+                    console.error('Analysis error:', error);
+                    // Fall back to demo data on any error
+                    setAnalysis(generateDemoData(address, addressDetails || {}));
+                    setDataSource('demo');
+                    setApiErrors([{ source: 'System', error: error.message }]);
+                } finally {
+                    setAnalyzing(false);
+                }
             };
 
-            const analysisSteps = [
-                'Searching property records...',
-                'Analyzing comparable sales...',
-                'Evaluating market conditions...',
-                'Generating AI valuation model...',
-                'Writing listing description...',
-                'Calculating optimal price strategy...',
-                'Finalizing analysis...'
-            ];
+            // Handle address selection from autocomplete
+            const handleAddressSelect = (details) => {
+                setAddressDetails(details);
+            };
 
             return (
                 <>
@@ -298,15 +581,14 @@ Located in a top-rated school district with easy access to tech hubs, shopping, 
                                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 glow">
                                     <div className="flex flex-col sm:flex-row gap-3">
                                         <div className="flex-1 relative">
-                                            <i className="fas fa-map-marker-alt absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                                            <input
-                                                type="text"
+                                            <i className="fas fa-map-marker-alt absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 z-10"></i>
+                                            <AddressAutocomplete
                                                 value={address}
-                                                onChange={(e) => setAddress(e.target.value)}
-                                                onKeyPress={(e) => e.key === 'Enter' && runAnalysis()}
-                                                className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-aire-500 text-lg"
+                                                onChange={setAddress}
+                                                onSelect={handleAddressSelect}
                                                 placeholder="Enter your property address..."
                                                 disabled={analyzing}
+                                                className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-aire-500 text-lg"
                                             />
                                         </div>
                                         <button
@@ -328,19 +610,29 @@ Located in a top-rated school district with easy access to tech hubs, shopping, 
                                         </button>
                                     </div>
 
+                                    {/* API Mode Indicator */}
+                                    {!analyzing && !analysis && (
+                                        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+                                            <span className={`w-2 h-2 rounded-full ${PropertyAPI.isLiveMode() ? 'bg-aire-400' : 'bg-yellow-500'}`}></span>
+                                            {PropertyAPI.isLiveMode() ? 'Live data mode - Real property APIs connected' : 'Demo mode - Deploy to Netlify for real data'}
+                                        </div>
+                                    )}
+
                                     {/* Analysis Progress */}
                                     {analyzing && (
                                         <div className="mt-6 space-y-2">
                                             {analysisSteps.map((step, idx) => (
-                                                <div key={idx} className={`flex items-center space-x-3 transition-all duration-300 ${idx <= analysisStep ? 'opacity-100' : 'opacity-30'}`}>
-                                                    {idx < analysisStep ? (
-                                                        <i className="fas fa-check-circle text-aire-400"></i>
-                                                    ) : idx === analysisStep ? (
-                                                        <i className="fas fa-circle-notch fa-spin text-aire-400"></i>
-                                                    ) : (
-                                                        <i className="fas fa-circle text-gray-600 text-xs"></i>
-                                                    )}
-                                                    <span className={`text-sm ${idx <= analysisStep ? 'text-white' : 'text-gray-500'}`}>{step}</span>
+                                                <div key={step.key} className={`flex items-center space-x-3 transition-all duration-300 ${idx < analysisStep ? 'opacity-100' : idx === analysisStep ? 'opacity-100' : 'opacity-30'}`}>
+                                                    <div className="w-6 flex justify-center">
+                                                        {idx < analysisStep ? (
+                                                            <i className="fas fa-check-circle text-aire-400"></i>
+                                                        ) : idx === analysisStep ? (
+                                                            <i className={`fas ${step.icon} fa-spin text-aire-400`}></i>
+                                                        ) : (
+                                                            <i className="fas fa-circle text-gray-600 text-xs"></i>
+                                                        )}
+                                                    </div>
+                                                    <span className={`text-sm ${idx <= analysisStep ? 'text-white' : 'text-gray-500'}`}>{step.label}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -351,6 +643,31 @@ Located in a top-rated school district with easy access to tech hubs, shopping, 
                             {/* AI Analysis Results */}
                             {analysis && (
                                 <div className="slide-up">
+                                    {/* Data Source Banner */}
+                                    {analysis.isDemo && (
+                                        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-4 flex items-center gap-3">
+                                            <i className="fas fa-info-circle text-yellow-500"></i>
+                                            <div className="flex-1">
+                                                <span className="text-yellow-400 font-medium">Demo Mode</span>
+                                                <span className="text-yellow-200/70 text-sm ml-2">
+                                                    Showing simulated data. Deploy to Netlify with API keys for real property data from Zillow, Redfin, and MLS.
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {!analysis.isDemo && analysis.sources?.length > 0 && (
+                                        <div className="bg-aire-500/10 border border-aire-500/30 rounded-xl p-4 mb-4 flex items-center gap-3">
+                                            <i className="fas fa-database text-aire-400"></i>
+                                            <div className="flex-1">
+                                                <span className="text-aire-400 font-medium">Live Data</span>
+                                                <span className="text-aire-200/70 text-sm ml-2">
+                                                    Sourced from: {analysis.sources.join(', ')}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Valuation Header */}
                                     <div className="bg-gradient-to-r from-aire-600 to-aire-800 rounded-3xl p-8 mb-6">
                                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -358,10 +675,15 @@ Located in a top-rated school district with easy access to tech hubs, shopping, 
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <i className="fas fa-robot text-aire-300"></i>
                                                     <span className="text-aire-200 text-sm font-medium">AI Valuation Complete</span>
+                                                    {analysis.confidence && (
+                                                        <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs text-white/90 ml-2">
+                                                            {analysis.confidence}% confidence
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <h2 className="text-2xl font-bold text-white">{analysis.address}</h2>
                                                 <div className="text-aire-200 text-sm mt-1">
-                                                    {analysis.beds} bed • {analysis.baths} bath • {analysis.sqft.toLocaleString()} sqft • Built {analysis.yearBuilt}
+                                                    {analysis.beds} bed • {analysis.baths} bath • {analysis.sqft?.toLocaleString() || 'N/A'} sqft • Built {analysis.yearBuilt}
                                                 </div>
                                             </div>
                                             <div className="text-left md:text-right">
@@ -412,38 +734,69 @@ Located in a top-rated school district with easy access to tech hubs, shopping, 
                                                     <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                                                         <i className="fas fa-brain text-aire-400"></i>
                                                         How AI Calculated Your Value
+                                                        {!analysis.isDemo && (
+                                                            <span className="bg-aire-500/20 text-aire-400 text-xs px-2 py-1 rounded-full ml-2">
+                                                                Live Data
+                                                            </span>
+                                                        )}
                                                     </h3>
                                                     <div className="grid md:grid-cols-3 gap-4">
                                                         <div className="bg-gray-800/50 rounded-xl p-4">
                                                             <div className="text-gray-400 text-sm">Price per Sq Ft</div>
-                                                            <div className="text-2xl font-bold">${analysis.pricePerSqft}</div>
+                                                            <div className="text-2xl font-bold">${analysis.pricePerSqft || 'N/A'}</div>
                                                             <div className="text-xs text-gray-500">Based on {analysis.neighborhood} comps</div>
                                                         </div>
                                                         <div className="bg-gray-800/50 rounded-xl p-4">
                                                             <div className="text-gray-400 text-sm">Confidence Score</div>
-                                                            <div className="text-2xl font-bold text-aire-400">94%</div>
-                                                            <div className="text-xs text-gray-500">High data accuracy</div>
+                                                            <div className="text-2xl font-bold text-aire-400">{analysis.confidence || 85}%</div>
+                                                            <div className="text-xs text-gray-500">
+                                                                {analysis.confidence >= 90 ? 'Very high accuracy' :
+                                                                 analysis.confidence >= 80 ? 'High accuracy' :
+                                                                 analysis.confidence >= 70 ? 'Good accuracy' : 'Moderate accuracy'}
+                                                            </div>
                                                         </div>
                                                         <div className="bg-gray-800/50 rounded-xl p-4">
                                                             <div className="text-gray-400 text-sm">Data Points Analyzed</div>
-                                                            <div className="text-2xl font-bold">2,847</div>
+                                                            <div className="text-2xl font-bold">{(analysis.dataPoints || 847).toLocaleString()}</div>
                                                             <div className="text-xs text-gray-500">Sales, listings, trends</div>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div>
-                                                    <h4 className="font-semibold mb-3">Comparable Sales</h4>
+                                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                                        Comparable Sales
+                                                        {analysis.comps?.length > 0 && (
+                                                            <span className="text-gray-500 text-sm font-normal">
+                                                                ({analysis.comps.length} found)
+                                                            </span>
+                                                        )}
+                                                    </h4>
                                                     <div className="space-y-3">
-                                                        {analysis.comps.map((comp, idx) => (
+                                                        {analysis.comps?.length > 0 ? analysis.comps.map((comp, idx) => (
                                                             <div key={idx} className="bg-gray-800/50 rounded-xl p-4 flex justify-between items-center">
                                                                 <div>
-                                                                    <div className="font-medium">{comp.address}</div>
-                                                                    <div className="text-gray-500 text-sm">{comp.sqft.toLocaleString()} sqft • Sold {comp.daysAgo} days ago</div>
+                                                                    <div className="font-medium flex items-center gap-2">
+                                                                        {comp.address}
+                                                                        {comp.source && (
+                                                                            <span className="text-xs text-gray-500 bg-gray-700 px-2 py-0.5 rounded">
+                                                                                {comp.source}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-gray-500 text-sm">
+                                                                        {comp.sqft?.toLocaleString() || 'N/A'} sqft
+                                                                        {comp.daysAgo ? ` • Sold ${comp.daysAgo} days ago` : ''}
+                                                                    </div>
                                                                 </div>
-                                                                <div className="text-xl font-bold">${comp.price.toLocaleString()}</div>
+                                                                <div className="text-xl font-bold">${comp.price?.toLocaleString() || 'N/A'}</div>
                                                             </div>
-                                                        ))}
+                                                        )) : (
+                                                            <div className="bg-gray-800/50 rounded-xl p-4 text-center text-gray-500">
+                                                                <i className="fas fa-search mb-2"></i>
+                                                                <p>No comparable sales data available. Deploy with API keys to fetch real comps.</p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

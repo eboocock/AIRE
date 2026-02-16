@@ -1,0 +1,13 @@
+# AIREA - AI Real Estate Agent
+# https://airea.ai
+
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /api/
+Disallow: /auth/
+Disallow: /checkout/
+
+# Allow search engines to find the sitemap
+Sitemap: https://airea.ai/sitemap.xml
