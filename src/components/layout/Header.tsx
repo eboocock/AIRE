@@ -47,7 +47,7 @@ export function Header() {
             </div>
             <span className="text-2xl font-bold">AIREA</span>
             <span className="text-xs text-gray-500 hidden sm:block">
-              AI Real Estate Agent
+              AI-Powered FSBO Platform
             </span>
           </Link>
 

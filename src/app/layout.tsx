@@ -5,19 +5,19 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'AIREA | AI Real Estate Agent - Sell Your Home Without the 6% Commission',
+  title: 'AIREA | AI-Powered FSBO Platform - Sell Your Home, Keep Your Equity',
   description:
-    'AIREA is your AI Real Estate Agent that knows your AIREA. List your home, get AI valuations, manage showings, and close deals — all for a flat $499 fee. Save thousands in commissions.',
+    'AIREA helps homeowners sell FSBO with AI-powered tools. Get instant property valuations, AI listing descriptions, showing scheduling, and offer management — starting at $299.',
   keywords: [
-    'AI real estate',
-    'AI real estate agent',
-    'sell home without agent',
     'FSBO',
     'for sale by owner',
+    'sell home without agent',
+    'AI real estate tools',
     'home valuation',
-    'real estate AI',
     'flat fee listing',
     'AIREA',
+    'sell my home',
+    'FSBO Washington',
   ],
   icons: {
     icon: '/favicon.svg',
@@ -26,8 +26,8 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://airea.ai'),
   openGraph: {
-    title: 'AIREA | Your AI Real Estate Agent',
-    description: 'The AI Real Estate Agent that knows your AIREA. Save the 6% commission.',
+    title: 'AIREA | Sell Your Home Smarter with AI',
+    description: 'AI-powered FSBO tools that help you sell your home and keep your equity. Starting at $299.',
     type: 'website',
     locale: 'en_US',
     siteName: 'AIREA',
@@ -35,15 +35,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AIREA | AI Real Estate Agent',
-    description: 'The AI Real Estate Agent that knows your AIREA. Save thousands in commissions.',
+    title: 'AIREA | AI-Powered FSBO Platform',
+    description: 'Sell your home yourself, smarter. AI valuations, listings, and offer management.',
   },
   robots: {
     index: true,
     follow: true,
-  },
-  verification: {
-    google: 'YOUR_GOOGLE_VERIFICATION_CODE',
   },
 };
 

@@ -16,7 +16,7 @@ export function AIAnalysisResults({ analysis, onGetStarted }: AIAnalysisResultsP
   const comps = analysis.comparables || [];
   const improvements = analysis.improvements || [];
 
-  const savings = Math.round((analysis.estimated_value || 0) * 0.06) - 499;
+  const savings = Math.round((analysis.estimated_value || 0) * 0.06) - 299;
 
   return (
     <div className="animate-slide-up">
@@ -27,7 +27,7 @@ export function AIAnalysisResults({ analysis, onGetStarted }: AIAnalysisResultsP
             <div className="flex items-center gap-2 mb-2">
               <i className="fas fa-robot text-aire-300" />
               <span className="text-aire-200 text-sm font-medium">
-                AI Valuation Complete
+                AI Estimate Complete
               </span>
               {analysis.confidence_score && (
                 <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs text-white/90 ml-2">
@@ -45,7 +45,7 @@ export function AIAnalysisResults({ analysis, onGetStarted }: AIAnalysisResultsP
             </div>
           </div>
           <div className="text-left md:text-right">
-            <div className="text-aire-200 text-sm">Estimated Market Value</div>
+            <div className="text-aire-200 text-sm">Estimated Value (not an appraisal)</div>
             <div className="text-4xl md:text-5xl font-black text-white">
               ${(analysis.estimated_value || 0).toLocaleString()}
             </div>
@@ -59,9 +59,9 @@ export function AIAnalysisResults({ analysis, onGetStarted }: AIAnalysisResultsP
         {/* Savings Banner */}
         <div className="mt-6 bg-white/10 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-center sm:text-left">
-            <div className="text-white font-semibold">Sell with AIREA and save</div>
+            <div className="text-white font-semibold">Potential savings selling FSBO</div>
             <div className="text-aire-200 text-sm">
-              vs. 6% traditional agent commission
+              vs. typical 6% agent commission
             </div>
           </div>
           <div className="text-3xl font-black text-white">
@@ -120,9 +120,13 @@ export function AIAnalysisResults({ analysis, onGetStarted }: AIAnalysisResultsP
                   <div className="text-xs text-gray-500">Analysis accuracy</div>
                 </div>
                 <div className="bg-gray-800/50 rounded-xl p-4">
-                  <div className="text-gray-400 text-sm">Data Points</div>
-                  <div className="text-2xl font-bold">2,847</div>
-                  <div className="text-xs text-gray-500">Sales, listings, trends</div>
+                  <div className="text-gray-400 text-sm">Data Source</div>
+                  <div className="text-2xl font-bold">
+                    {analysis.data_sources?.[0] === 'Demo Mode' ? 'Sample' : 'Public'}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {analysis.data_sources?.[0] === 'Demo Mode' ? 'Demo data' : 'Public records'}
+                  </div>
                 </div>
               </div>
             </div>
@@ -244,17 +248,26 @@ export function AIAnalysisResults({ analysis, onGetStarted }: AIAnalysisResultsP
         )}
       </div>
 
+      {/* Disclaimer */}
+      <div className="mt-4 p-3 bg-gray-800/50 rounded-xl">
+        <p className="text-gray-500 text-xs">
+          <i className="fas fa-info-circle mr-1" />
+          This estimate is based on public data and comparable sales. It is not a professional appraisal.
+          Consult a licensed appraiser for an official valuation. AIREA is a technology platform, not a real estate brokerage.
+        </p>
+      </div>
+
       {/* CTA */}
       <div className="mt-6 text-center">
         <button
           onClick={onGetStarted}
           className="bg-aire-500 hover:bg-aire-600 text-white px-10 py-4 rounded-xl font-bold text-lg transition shadow-lg shadow-aire-500/25"
         >
-          List My Home with AIREA
+          Start My FSBO Listing
           <i className="fas fa-arrow-right ml-2" />
         </button>
         <p className="text-gray-500 text-sm mt-3">
-          Save ${savings.toLocaleString()} vs. traditional agent • No upfront costs
+          Starting at $299 • No brokerage fees
         </p>
       </div>
     </div>

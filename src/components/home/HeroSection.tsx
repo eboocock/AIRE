@@ -35,7 +35,6 @@ export function HeroSection() {
     setError(null);
 
     try {
-      // Run analysis with progress updates
       const result = await analyzeProperty(address, addressDetails, (step) => {
         setAnalysisStep(step);
       });
@@ -49,7 +48,6 @@ export function HeroSection() {
   };
 
   const handleGetStarted = () => {
-    // Store analysis in session and redirect to signup/onboarding
     if (analysis) {
       sessionStorage.setItem('aireaAnalysis', JSON.stringify(analysis));
     }
@@ -70,17 +68,18 @@ export function HeroSection() {
           <div className="inline-flex items-center bg-aire-500/10 border border-aire-500/30 rounded-full px-4 py-2 mb-6">
             <span className="w-2 h-2 bg-aire-400 rounded-full mr-2 animate-pulse" />
             <span className="text-aire-400 text-sm font-medium">
-              FSBA<span className="text-aire-300">I</span> — For Sale By AI
+              Now available in Washington State
             </span>
           </div>
 
           <h1 className="text-4xl md:text-6xl font-black mb-4 leading-tight">
-            Your AI Real Estate Agent
+            Sell Your Home Yourself,{' '}
+            <span className="text-aire-400">Smarter</span>
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Enter your address and watch AIREA analyze your property in real-time.
-            Get instant valuation, market insights, and a professional listing —
-            your AI agent that knows your AIREA.
+            AIREA gives you AI-powered tools to sell FSBO with confidence.
+            Get an instant property estimate, professional listing description,
+            showing scheduler, and offer management — starting at $299.
           </p>
         </div>
 
@@ -111,12 +110,17 @@ export function HeroSection() {
                   </>
                 ) : (
                   <>
-                    <i className="fas fa-brain mr-2" />
-                    Analyze with AI
+                    <i className="fas fa-search mr-2" />
+                    Get Free Estimate
                   </>
                 )}
               </button>
             </div>
+
+            <p className="text-gray-500 text-xs mt-3">
+              <i className="fas fa-info-circle mr-1" />
+              AI estimates are based on public data and comparable sales. This is not an appraisal.
+            </p>
 
             {/* Analysis Progress */}
             {analyzing && (
@@ -163,17 +167,31 @@ export function HeroSection() {
           </div>
         </div>
 
+        {/* Trust indicators */}
+        {!analysis && !analyzing && (
+          <div className="flex flex-wrap justify-center gap-6 text-gray-500 text-sm mt-8">
+            <div className="flex items-center gap-2">
+              <i className="fas fa-tag text-aire-400" />
+              <span>Starting at $299</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <i className="fas fa-clock text-aire-400" />
+              <span>List in 10 minutes</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <i className="fas fa-map-marker-alt text-aire-400" />
+              <span>Washington State</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <i className="fas fa-shield-alt text-aire-400" />
+              <span>No brokerage fees</span>
+            </div>
+          </div>
+        )}
+
         {/* Analysis Results */}
         {analysis && (
           <AIAnalysisResults analysis={analysis} onGetStarted={handleGetStarted} />
-        )}
-
-        {/* Pre-analysis prompt */}
-        {!analysis && !analyzing && (
-          <div className="text-center text-gray-500 mt-8">
-            <i className="fas fa-arrow-up text-aire-400 text-2xl mb-3 animate-bounce" />
-            <p>Enter your address above to see AIREA in action</p>
-          </div>
         )}
       </div>
     </section>

@@ -123,13 +123,13 @@ function generateDemoAnalysis(
       schoolRating: 8,
       walkScore: 65,
     },
-    listing_description: `Welcome to this stunning 4-bedroom, 2.5-bath home in ${neighborhood}. Built in 2005, this 2,450 sq ft residence offers modern comfort and timeless elegance.\n\nThe open-concept floor plan features hardwood floors and abundant natural light. The chef's kitchen boasts granite countertops and stainless steel appliances.\n\nLocated in a top-rated school district with easy access to tech hubs, shopping, and dining.`,
+    listing_description: `This is a sample listing description for a home in ${neighborhood}. When you create your listing, AIREA's AI will generate a custom description based on your property's actual features, photos, and details.\n\nSample: Welcome to this 4-bedroom, 2.5-bath home in ${neighborhood}. This 2,450 sq ft residence offers modern comfort with an open floor plan, updated kitchen, and a top-rated school district location.\n\nNote: This is demo data. Sign up to get a real AI-generated description for your property.`,
     improvements: [
       { item: 'Professional photography & staging', cost: 800, addedValue: Math.round(estimatedValue * 0.03), roi: '650%' },
       { item: 'Fresh interior paint', cost: 2500, addedValue: Math.round(estimatedValue * 0.02), roi: '220%' },
       { item: 'Landscape refresh', cost: 1500, addedValue: Math.round(estimatedValue * 0.015), roi: '300%' },
     ],
-    data_sources: ['Demo Mode'],
+    data_sources: ['Demo Mode — sign up for real data'],
     expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     created_at: new Date().toISOString(),
   };
