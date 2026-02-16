@@ -1,8 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'AIREA | AI-Powered FSBO Platform - Sell Your Home, Keep Your Equity',
@@ -57,7 +54,7 @@ export default function RootLayout({
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         />
       </head>
-      <body className={`${inter.className} bg-gray-950 text-white antialiased`}>
+      <body className="bg-gray-950 text-white antialiased font-sans">
         {children}
       </body>
     </html>

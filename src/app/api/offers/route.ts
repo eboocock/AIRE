@@ -125,10 +125,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Update listing inquiry count
-    await supabase.rpc('increment_listing_stat', {
-      listing_id: offerData.listing_id,
-      stat_name: 'inquiry_count'
-    }).catch(() => {});
+    try {
+      await supabase.rpc('increment_listing_stat', {
+        listing_id: offerData.listing_id,
+        stat_name: 'inquiry_count'
+      });
+    } catch {
+      // stat tracking is non-critical
+    }
 
     return NextResponse.json({ offer }, { status: 201 });
   } catch (error: any) {
