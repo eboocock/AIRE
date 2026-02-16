@@ -4,6 +4,12 @@ import { createClient } from '@/lib/supabase/server';
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
+// Simple in-memory rate limiting for unauthenticated users
+// In production, use Redis or similar
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
+const MAX_REQUESTS_UNAUTHENTICATED = 3; // 3 requests per hour for unauthenticated
+
 interface PropertyDetails {
   latitude?: number;
   longitude?: number;
@@ -146,6 +152,39 @@ function generateDemoData(address: string, details: PropertyDetails | null) {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Rate limiting for unauthenticated users
+    if (!user) {
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+                 request.headers.get('x-real-ip') ||
+                 'unknown';
+
+      const now = Date.now();
+      const rateLimit = rateLimitMap.get(ip);
+
+      if (rateLimit) {
+        if (now < rateLimit.resetAt) {
+          if (rateLimit.count >= MAX_REQUESTS_UNAUTHENTICATED) {
+            return NextResponse.json(
+              {
+                error: 'Rate limit exceeded',
+                message: 'Please sign up for unlimited AI property analysis',
+                retryAfter: Math.ceil((rateLimit.resetAt - now) / 1000),
+              },
+              { status: 429 }
+            );
+          }
+          rateLimit.count++;
+        } else {
+          rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+        }
+      } else {
+        rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+      }
+    }
+
     const { address, details } = await request.json();
 
     if (!address) {

@@ -11,10 +11,10 @@ export function Footer() {
               <div className="w-10 h-10 bg-gradient-to-br from-aire-400 to-aire-600 rounded-xl flex items-center justify-center">
                 <i className="fas fa-robot text-white text-lg" />
               </div>
-              <span className="text-2xl font-bold">AIRE</span>
+              <span className="text-2xl font-bold">AIREA</span>
             </Link>
             <p className="text-gray-500 text-sm">
-              Your AI-powered real estate agent. Sell your home for a flat $499
+              Your AI Real Estate Agent that knows your AIREA. Sell your home for a flat $499
               fee and keep your equity.
             </p>
           </div>
@@ -103,12 +103,12 @@ export function Footer() {
 
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="text-gray-500 text-sm mb-4 md:mb-0">
-            © {new Date().getFullYear()} AIRE Technologies Inc. All rights
+            © {new Date().getFullYear()} AIREA Technologies Inc. All rights
             reserved.
           </div>
           <div className="flex items-center space-x-4">
             <a
-              href="https://twitter.com/airetech"
+              href="https://twitter.com/ailorea"
               className="text-gray-500 hover:text-white transition"
               target="_blank"
               rel="noopener noreferrer"
@@ -116,7 +116,7 @@ export function Footer() {
               <i className="fab fa-twitter text-lg" />
             </a>
             <a
-              href="https://linkedin.com/company/aire"
+              href="https://linkedin.com/company/airea"
               className="text-gray-500 hover:text-white transition"
               target="_blank"
               rel="noopener noreferrer"
@@ -124,7 +124,7 @@ export function Footer() {
               <i className="fab fa-linkedin text-lg" />
             </a>
             <a
-              href="https://instagram.com/airetech"
+              href="https://instagram.com/airea"
               className="text-gray-500 hover:text-white transition"
               target="_blank"
               rel="noopener noreferrer"

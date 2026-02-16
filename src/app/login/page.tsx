@@ -57,7 +57,7 @@ function LoginForm() {
             <div className="w-12 h-12 bg-gradient-to-br from-aire-400 to-aire-600 rounded-xl flex items-center justify-center">
               <i className="fas fa-robot text-white text-xl" />
             </div>
-            <span className="text-3xl font-bold text-white">AIRE</span>
+            <span className="text-3xl font-bold text-white">AIREA</span>
           </Link>
           <p className="mt-3 text-gray-400">Welcome back to your AI real estate agent</p>
         </div>

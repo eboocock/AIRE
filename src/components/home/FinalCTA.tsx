@@ -12,7 +12,7 @@ export function FinalCTA() {
           <span className="gradient-text">Your Commission?</span>
         </h2>
         <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-          Join thousands of homeowners who've saved an average of $32,000 by selling with AIRE.
+          Join thousands of homeowners who've saved an average of $32,000 by selling with AIREA.
         </p>
         <Link
           href="/signup"

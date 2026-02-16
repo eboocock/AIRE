@@ -1,7 +1,7 @@
 {
-  "name": "aire-ai-real-estate",
+  "name": "airea-ai-real-estate",
   "version": "1.0.0",
-  "description": "AIRE - AI Real Estate Platform. Your AI-powered real estate agent.",
+  "description": "AIREA - AI Real Estate Agent. Your AI-powered real estate agent that knows your AIREA.",
   "private": true,
   "scripts": {
     "dev": "next dev",

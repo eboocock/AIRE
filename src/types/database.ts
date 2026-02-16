@@ -1,4 +1,4 @@
-// Database types for AIRE
+// Database types for AIREA
 // Auto-generate with: npm run db:generate
 
 export type Json =

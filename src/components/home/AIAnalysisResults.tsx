@@ -59,7 +59,7 @@ export function AIAnalysisResults({ analysis, onGetStarted }: AIAnalysisResultsP
         {/* Savings Banner */}
         <div className="mt-6 bg-white/10 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-center sm:text-left">
-            <div className="text-white font-semibold">Sell with AIRE and save</div>
+            <div className="text-white font-semibold">Sell with AIREA and save</div>
             <div className="text-aire-200 text-sm">
               vs. 6% traditional agent commission
             </div>
@@ -250,7 +250,7 @@ export function AIAnalysisResults({ analysis, onGetStarted }: AIAnalysisResultsP
           onClick={onGetStarted}
           className="bg-aire-500 hover:bg-aire-600 text-white px-10 py-4 rounded-xl font-bold text-lg transition shadow-lg shadow-aire-500/25"
         >
-          List My Home with AIRE
+          List My Home with AIREA
           <i className="fas fa-arrow-right ml-2" />
         </button>
         <p className="text-gray-500 text-sm mt-3">

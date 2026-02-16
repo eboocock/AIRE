@@ -10,10 +10,10 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
     .eq('id', params.id)
     .single();
 
-  if (!listing) return { title: 'Listing Not Found | AIRE' };
+  if (!listing) return { title: 'Listing Not Found | AIREA' };
 
   return {
-    title: `${listing.headline || listing.street_address} | AIRE`,
+    title: `${listing.headline || listing.street_address} | AIREA`,
     description: `${listing.street_address}, ${listing.city}, ${listing.state} - $${listing.list_price?.toLocaleString() || 'Contact for price'}`,
   };
 }

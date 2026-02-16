@@ -51,7 +51,7 @@ export function HeroSection() {
   const handleGetStarted = () => {
     // Store analysis in session and redirect to signup/onboarding
     if (analysis) {
-      sessionStorage.setItem('aireAnalysis', JSON.stringify(analysis));
+      sessionStorage.setItem('aireaAnalysis', JSON.stringify(analysis));
     }
     router.push('/signup?from=analysis');
   };
@@ -78,9 +78,9 @@ export function HeroSection() {
             Your AI Real Estate Agent
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Enter your address and watch AIRE analyze your property in real-time.
+            Enter your address and watch AIREA analyze your property in real-time.
             Get instant valuation, market insights, and a professional listing —
-            powered by AI.
+            your AI agent that knows your AIREA.
           </p>
         </div>
 
@@ -172,7 +172,7 @@ export function HeroSection() {
         {!analysis && !analyzing && (
           <div className="text-center text-gray-500 mt-8">
             <i className="fas fa-arrow-up text-aire-400 text-2xl mb-3 animate-bounce" />
-            <p>Enter your address above to see AIRE in action</p>
+            <p>Enter your address above to see AIREA in action</p>
           </div>
         )}
       </div>

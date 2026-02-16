@@ -2,7 +2,7 @@ export function Testimonials() {
   const testimonials = [
     { quote: 'I saved $38,000 selling my Seattle home. The AI priced it perfectly—sold in 5 days with multiple offers.', name: 'Michael T.', location: 'Seattle, WA', saved: '$38,000' },
     { quote: 'The mobile app made everything so easy. Took photos, approved showings, signed documents—all from my phone.', name: 'Sarah L.', location: 'Bellevue, WA', saved: '$27,500' },
-    { quote: 'I was skeptical about selling without an agent, but AIRE\'s support team was there whenever I needed them.', name: 'David & Maria R.', location: 'Tacoma, WA', saved: '$31,200' },
+    { quote: 'I was skeptical about selling without an agent, but AIREA\'s support team was there whenever I needed them.', name: 'David & Maria R.', location: 'Tacoma, WA', saved: '$31,200' },
   ];
 
   return (

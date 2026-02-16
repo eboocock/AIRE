@@ -10,6 +10,7 @@ export function Header() {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const supabase = getSupabaseClient();
@@ -30,6 +31,11 @@ export function Header() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/80 backdrop-blur-xl border-b border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,13 +45,13 @@ export function Header() {
             <div className="w-10 h-10 bg-gradient-to-br from-aire-400 to-aire-600 rounded-xl flex items-center justify-center">
               <i className="fas fa-robot text-white text-lg" />
             </div>
-            <span className="text-2xl font-bold">AIRE</span>
+            <span className="text-2xl font-bold">AIREA</span>
             <span className="text-xs text-gray-500 hidden sm:block">
-              AI Real Estate
+              AI Real Estate Agent
             </span>
           </Link>
 
-          {/* Navigation */}
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link
               href="/#how-it-works"
@@ -102,11 +108,78 @@ export function Header() {
           </div>
 
           {/* Mobile menu button */}
-          <button className="md:hidden text-gray-400 hover:text-white">
-            <i className="fas fa-bars text-xl" />
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-gray-400 hover:text-white p-2"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+          >
+            <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'} text-xl`} />
           </button>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-gray-900 border-b border-gray-800">
+          <div className="px-4 py-4 space-y-3">
+            <Link
+              href="/#how-it-works"
+              className="block text-gray-300 hover:text-white py-2 transition"
+            >
+              How It Works
+            </Link>
+            <Link
+              href="/#features"
+              className="block text-gray-300 hover:text-white py-2 transition"
+            >
+              Features
+            </Link>
+            <Link
+              href="/pricing"
+              className="block text-gray-300 hover:text-white py-2 transition"
+            >
+              Pricing
+            </Link>
+
+            <div className="border-t border-gray-800 pt-3 mt-3">
+              {loading ? (
+                <div className="w-full h-10 bg-gray-800 rounded-lg animate-pulse" />
+              ) : user ? (
+                <div className="space-y-3">
+                  <Link
+                    href="/dashboard"
+                    className="block text-gray-300 hover:text-white py-2 transition"
+                  >
+                    <i className="fas fa-th-large mr-2" />
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/listings/new"
+                    className="block w-full bg-aire-500 hover:bg-aire-600 text-white px-4 py-3 rounded-lg font-semibold text-center transition"
+                  >
+                    List My Home
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Link
+                    href="/login"
+                    className="block text-gray-300 hover:text-white py-2 transition"
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="block w-full bg-aire-500 hover:bg-aire-600 text-white px-4 py-3 rounded-lg font-semibold text-center transition"
+                  >
+                    Get Started
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

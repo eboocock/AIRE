@@ -80,7 +80,7 @@ export function ListingDetail({ listing, isOwner, currentUserId }: ListingDetail
               <div className="rounded-xl overflow-hidden bg-gray-900">
                 <div className="aspect-[16/10] relative">
                   <img
-                    src={primaryPhoto?.url || '/placeholder.jpg'}
+                    src={primaryPhoto?.url || '/placeholder.svg'}
                     alt={listing.street_address}
                     className="w-full h-full object-cover"
                   />

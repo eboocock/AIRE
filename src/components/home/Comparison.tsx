@@ -1,14 +1,14 @@
 export function Comparison() {
   const rows = [
-    { label: 'Commission', traditional: '6% ($45,000)', aire: '$499 flat', aireGood: true },
-    { label: 'Time to List', traditional: '1-2 weeks', aire: '10 minutes', aireGood: true },
-    { label: '24/7 Availability', traditional: 'No', aire: 'Yes', aireGood: true },
-    { label: 'MLS Listing', traditional: 'Yes', aire: 'Yes', aireGood: true, traditionalGood: true },
-    { label: 'AI Pricing Analysis', traditional: 'No', aire: 'Yes', aireGood: true },
-    { label: 'Automated Showings', traditional: 'No', aire: 'Yes', aireGood: true },
-    { label: 'Digital Documents', traditional: 'Sometimes', aire: 'Always', aireGood: true },
-    { label: 'Doc Accuracy Score', traditional: 'Unverified', aire: '97.4% Eval\'d', aireGood: true },
-    { label: 'You\'re in Control', traditional: 'No', aire: '100%', aireGood: true },
+    { label: 'Commission', traditional: '6% ($45,000)', airea: '$499 flat', aireaGood: true },
+    { label: 'Time to List', traditional: '1-2 weeks', airea: '10 minutes', aireaGood: true },
+    { label: '24/7 Availability', traditional: 'No', airea: 'Yes', aireaGood: true },
+    { label: 'MLS Listing', traditional: 'Yes', airea: 'Yes', aireaGood: true, traditionalGood: true },
+    { label: 'AI Pricing Analysis', traditional: 'No', airea: 'Yes', aireaGood: true },
+    { label: 'Automated Showings', traditional: 'No', airea: 'Yes', aireaGood: true },
+    { label: 'Digital Documents', traditional: 'Sometimes', airea: 'Always', aireaGood: true },
+    { label: 'Doc Accuracy Score', traditional: 'Unverified', airea: '97.4% Eval\'d', aireaGood: true },
+    { label: 'You\'re in Control', traditional: 'No', airea: '100%', aireaGood: true },
   ];
 
   return (
@@ -16,7 +16,7 @@ export function Comparison() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Why Sellers <span className="gradient-text">Choose AIRE</span>
+            Why Sellers <span className="gradient-text">Choose AIREA</span>
           </h2>
         </div>
 
@@ -24,7 +24,7 @@ export function Comparison() {
           <div className="grid grid-cols-3 bg-gray-800/50 p-4">
             <div />
             <div className="text-center font-bold text-gray-400">Traditional Agent</div>
-            <div className="text-center font-bold text-aire-400">AIRE</div>
+            <div className="text-center font-bold text-aire-400">AIREA</div>
           </div>
           {rows.map((row) => (
             <div key={row.label} className="grid grid-cols-3 p-4 border-b border-gray-800">
@@ -32,8 +32,8 @@ export function Comparison() {
               <div className={`text-center ${row.traditionalGood ? 'text-white' : 'text-gray-500'}`}>
                 {row.traditional}
               </div>
-              <div className={`text-center font-semibold ${row.aireGood ? 'text-aire-400' : 'text-white'}`}>
-                {row.aire}
+              <div className={`text-center font-semibold ${row.aireaGood ? 'text-aire-400' : 'text-white'}`}>
+                {row.airea}
               </div>
             </div>
           ))}

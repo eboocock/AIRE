@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { DashboardContent } from '@/components/dashboard/DashboardContent';
 
 export const metadata = {
-  title: 'Dashboard | AIRE',
+  title: 'Dashboard | AIREA',
   description: 'Manage your property listings',
 };
 

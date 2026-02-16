@@ -5,33 +5,45 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'AIRE | AI Real Estate - Sell Your Home Without the 6% Commission',
+  title: 'AIREA | AI Real Estate Agent - Sell Your Home Without the 6% Commission',
   description:
-    'AIRE is your AI-powered real estate agent. List your home, get AI valuations, manage showings, and close deals — all for a flat $499 fee. Save thousands in commissions.',
+    'AIREA is your AI Real Estate Agent that knows your AIREA. List your home, get AI valuations, manage showings, and close deals — all for a flat $499 fee. Save thousands in commissions.',
   keywords: [
     'AI real estate',
+    'AI real estate agent',
     'sell home without agent',
     'FSBO',
     'for sale by owner',
     'home valuation',
     'real estate AI',
     'flat fee listing',
+    'AIREA',
   ],
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://airea.ai'),
   openGraph: {
-    title: 'AIRE | Your AI Real Estate Agent',
-    description: 'Sell your home with AI. Save the 6% commission.',
+    title: 'AIREA | Your AI Real Estate Agent',
+    description: 'The AI Real Estate Agent that knows your AIREA. Save the 6% commission.',
     type: 'website',
     locale: 'en_US',
-    siteName: 'AIRE',
+    siteName: 'AIREA',
+    url: '/',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AIRE | AI Real Estate',
-    description: 'Your AI-powered real estate agent. Save thousands in commissions.',
+    title: 'AIREA | AI Real Estate Agent',
+    description: 'The AI Real Estate Agent that knows your AIREA. Save thousands in commissions.',
   },
   robots: {
     index: true,
     follow: true,
+  },
+  verification: {
+    google: 'YOUR_GOOGLE_VERIFICATION_CODE',
   },
 };
 

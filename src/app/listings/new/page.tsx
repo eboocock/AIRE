@@ -823,7 +823,7 @@ export default function NewListingPage() {
             {/* Savings Calculator */}
             {form.list_price && parseInt(form.list_price) > 0 && (
               <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4">
-                <h4 className="text-sm font-medium text-green-400 mb-2">Your Savings with AIRE</h4>
+                <h4 className="text-sm font-medium text-green-400 mb-2">Your Savings with AIREA</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <div className="text-gray-400">Traditional Agent (6%)</div>
@@ -832,7 +832,7 @@ export default function NewListingPage() {
                     </div>
                   </div>
                   <div>
-                    <div className="text-gray-400">AIRE Flat Fee</div>
+                    <div className="text-gray-400">AIREA Flat Fee</div>
                     <div className="text-aire-400 font-semibold">$499</div>
                   </div>
                 </div>

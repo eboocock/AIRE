@@ -1,6 +1,6 @@
 export function Features() {
   const features = [
-    { icon: 'fa-magic', title: 'AI Listing Writer', description: 'Upload photos, AIRE creates compelling descriptions that sell.' },
+    { icon: 'fa-magic', title: 'AI Listing Writer', description: 'Upload photos, AIREA creates compelling descriptions that sell.' },
     { icon: 'fa-search-dollar', title: 'Smart Pricing', description: 'Real-time market analysis ensures you price right from day one.' },
     { icon: 'fa-ad', title: 'Automated Marketing', description: 'Syndicated to 100+ sites with targeted social media campaigns.' },
     { icon: 'fa-calendar-check', title: 'Showing Coordinator', description: 'Buyers book directly. You approve. Smart lockbox handles access.' },

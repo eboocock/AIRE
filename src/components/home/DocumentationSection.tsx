@@ -17,7 +17,7 @@ export function DocumentationSection() {
           </h2>
           <p className="text-gray-400 text-lg max-w-3xl mx-auto">
             The #1 concern with selling without an agent: "Who handles the paperwork?"
-            AIRE does — with independently verified accuracy scores.
+            AIREA does — with independently verified accuracy scores.
           </p>
         </div>
 
@@ -43,9 +43,9 @@ export function DocumentationSection() {
                 <i className="fas fa-flask text-aire-400 mr-2 text-sm" />
                 <span className="text-aire-400 text-sm font-medium">Independently Evaluated</span>
               </div>
-              <h3 className="text-2xl font-bold mb-2">AIRE Documentation Accuracy Score</h3>
+              <h3 className="text-2xl font-bold mb-2">AIREA Documentation Accuracy Score</h3>
               <p className="text-gray-400 mb-4">
-                We continuously evaluate AIRE's ability to generate, review, and manage every document required
+                We continuously evaluate AIREA's ability to generate, review, and manage every document required
                 in a real estate transaction. Our eval suite tests against 1,200+ real transaction scenarios.
               </p>
             </div>
