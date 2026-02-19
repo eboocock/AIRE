@@ -143,23 +143,32 @@ export default function NewListingPage() {
         }),
       });
 
-      if (!res.ok) throw new Error('Analysis failed');
-
       const data = await res.json();
 
+      if (!res.ok) {
+        throw new Error(data.message || data.error || 'Analysis failed');
+      }
+
+      if (data.error) {
+        throw new Error(data.message || data.error);
+      }
+
+      // Validate we got actual data
+      if (!data.estimated_value) {
+        throw new Error('No valuation data received');
+      }
+
       updateForm({
-        ai_estimated_value: data.estimated_value || null,
+        ai_estimated_value: data.estimated_value,
         ai_value_low: data.value_low || null,
         ai_value_high: data.value_high || null,
         ai_confidence_score: data.confidence_score || null,
         ai_generated_description: data.listing_description || '',
+        list_price: form.list_price || data.estimated_value.toString(),
       });
-
-      if (!form.list_price && data.estimated_value) {
-        updateForm({ list_price: data.estimated_value.toString() });
-      }
     } catch (err: any) {
-      setError('AI analysis failed. You can still set pricing manually.');
+      console.error('AI Analysis error:', err);
+      setError(err.message || 'AI analysis failed. You can still set pricing manually.');
     } finally {
       setAnalyzing(false);
     }
@@ -455,12 +464,45 @@ export default function NewListingPage() {
                   >
                     {analyzing ? (
                       <><i className="fas fa-spinner fa-spin mr-2" />Analyzing...</>
+                    ) : form.ai_estimated_value ? (
+                      <><i className="fas fa-redo mr-2" />Re-run Analysis</>
                     ) : (
                       <><i className="fas fa-magic mr-2" />Run AI Analysis</>
                     )}
                   </button>
                 </div>
               </div>
+
+              {/* Show analysis results */}
+              {form.ai_estimated_value && (
+                <div className="mt-4 pt-4 border-t border-aire-500/20">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">AI Estimated Value</div>
+                      <div className="text-xl font-bold text-white">${form.ai_estimated_value.toLocaleString()}</div>
+                      {form.ai_value_low && form.ai_value_high && (
+                        <div className="text-xs text-gray-400">
+                          Range: ${form.ai_value_low.toLocaleString()} - ${form.ai_value_high.toLocaleString()}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">Confidence</div>
+                      <div className="text-xl font-bold text-aire-400">{form.ai_confidence_score}%</div>
+                    </div>
+                  </div>
+                  {form.ai_generated_description && (
+                    <div className="mt-3">
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">AI Description Preview</div>
+                      <p className="text-sm text-gray-300 line-clamp-2">{form.ai_generated_description}</p>
+                    </div>
+                  )}
+                  <p className="text-xs text-green-400 mt-3">
+                    <i className="fas fa-check-circle mr-1" />
+                    Analysis complete! Continue to see full details.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}

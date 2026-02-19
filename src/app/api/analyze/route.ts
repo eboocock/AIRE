@@ -97,11 +97,37 @@ Features: ${propertyData.features?.join(', ') || 'Modern finishes'}`;
   }
 }
 
+// Parse address string to extract city, state, zip
+function parseAddress(address: string): { city: string; state: string; zipCode: string } {
+  // Expected format: "123 Main St, City, ST 12345"
+  const parts = address.split(',').map(p => p.trim());
+  let city = 'Unknown';
+  let state = 'WA';
+  let zipCode = '98000';
+
+  if (parts.length >= 2) {
+    city = parts[1] || city;
+  }
+  if (parts.length >= 3) {
+    const stateZip = parts[2].trim();
+    const match = stateZip.match(/^([A-Z]{2})\s*(\d{5})?/i);
+    if (match) {
+      state = match[1].toUpperCase();
+      if (match[2]) zipCode = match[2];
+    }
+  }
+
+  return { city, state, zipCode };
+}
+
 // Generate demo data fallback
 function generateDemoData(address: string, details: PropertyDetails | null) {
   const addrLower = address.toLowerCase();
+  const parsed = parseAddress(address);
   let pricePerSqft = 450;
-  let city = details?.city || 'Unknown';
+  let city = parsed.city;
+  const state = details?.state || parsed.state;
+  const zipCode = details?.zipCode || parsed.zipCode;
 
   if (addrLower.includes('sammamish') || addrLower.includes('98075')) {
     pricePerSqft = 585;
@@ -126,8 +152,8 @@ function generateDemoData(address: string, details: PropertyDetails | null) {
   return {
     street_address: address,
     city,
-    state: details?.state || 'WA',
-    zip_code: details?.zipCode || '98000',
+    state,
+    zip_code: zipCode,
     estimated_value: estimatedValue,
     value_low: Math.round(estimatedValue * 0.95 / 1000) * 1000,
     value_high: Math.round(estimatedValue * 1.08 / 1000) * 1000,
