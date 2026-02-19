@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import type { Profile, Listing } from '@/types/database';
 import { ListingCard } from './ListingCard';
+import { getSupabaseClient } from '@/lib/supabase/client';
 
 interface DashboardContentProps {
   user: User;
@@ -20,7 +22,23 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ user, profile, listings, stats }: DashboardContentProps) {
+  const router = useRouter();
   const [filter, setFilter] = useState<string>('all');
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  // Get display name from profile or user metadata
+  const displayName = profile?.full_name?.split(' ')[0]
+    || user.user_metadata?.full_name?.split(' ')[0]
+    || user.email?.split('@')[0]
+    || 'there';
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    const supabase = getSupabaseClient();
+    await supabase.auth.signOut();
+    router.push('/');
+    router.refresh();
+  };
 
   const filteredListings = listings.filter(listing => {
     if (filter === 'all') return true;
@@ -35,19 +53,35 @@ export function DashboardContent({ user, profile, listings, stats }: DashboardCo
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-white">
-                Welcome back, {profile?.full_name?.split(' ')[0] || 'Seller'}
+                Welcome back, {displayName}
               </h1>
               <p className="text-gray-400 mt-1">
                 Manage your listings and track your sales
               </p>
             </div>
-            <Link
-              href="/listings/new"
-              className="inline-flex items-center justify-center bg-aire-500 hover:bg-aire-600 text-white px-6 py-3 rounded-xl font-semibold transition"
-            >
-              <i className="fas fa-plus mr-2" />
-              New Listing
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/listings/new"
+                className="inline-flex items-center justify-center bg-aire-500 hover:bg-aire-600 text-white px-6 py-3 rounded-xl font-semibold transition"
+              >
+                <i className="fas fa-plus mr-2" />
+                New Listing
+              </Link>
+              <button
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="inline-flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white px-4 py-3 rounded-xl font-medium transition"
+              >
+                {loggingOut ? (
+                  <i className="fas fa-spinner fa-spin" />
+                ) : (
+                  <>
+                    <i className="fas fa-sign-out-alt mr-2" />
+                    Logout
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </header>

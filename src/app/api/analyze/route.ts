@@ -177,7 +177,27 @@ function generateDemoData(address: string, details: PropertyDetails | null) {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('[Analyze API] Request received');
+
   try {
+    // Parse request body first
+    let body;
+    try {
+      body = await request.json();
+      console.log('[Analyze API] Body parsed:', { address: body.address });
+    } catch (parseError) {
+      console.error('[Analyze API] Failed to parse body:', parseError);
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
+    const address = body.address;
+    const details = body.details || body.propertyDetails;
+
+    if (!address || typeof address !== 'string' || address.trim().length === 0) {
+      console.log('[Analyze API] Invalid address:', address);
+      return NextResponse.json({ error: 'Address is required' }, { status: 400 });
+    }
+
     // Check for authenticated user (skip if Supabase not configured)
     let user = null;
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
@@ -190,43 +210,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Rate limiting for unauthenticated users
-    if (!user) {
-      const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ||
-                 request.headers.get('x-real-ip') ||
-                 'unknown';
-
-      const now = Date.now();
-      const rateLimit = rateLimitMap.get(ip);
-
-      if (rateLimit) {
-        if (now < rateLimit.resetAt) {
-          if (rateLimit.count >= MAX_REQUESTS_UNAUTHENTICATED) {
-            return NextResponse.json(
-              {
-                error: 'Rate limit exceeded',
-                message: 'Please sign up for unlimited AI property analysis',
-                retryAfter: Math.ceil((rateLimit.resetAt - now) / 1000),
-              },
-              { status: 429 }
-            );
-          }
-          rateLimit.count++;
-        } else {
-          rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
-        }
-      } else {
-        rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
-      }
-    }
-
-    const body = await request.json();
-    const address = body.address;
-    const details = body.details || body.propertyDetails; // Support both field names
-
-    if (!address) {
-      return NextResponse.json({ error: 'Address is required' }, { status: 400 });
-    }
+    // Rate limiting for unauthenticated users (disabled for now to debug)
+    // TODO: Re-enable after testing
 
     // Try to fetch real data
     const propertyData = await fetchPropertyData(address);
@@ -309,11 +294,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Fall back to demo data
-    return NextResponse.json(generateDemoData(address, details));
+    console.log('[Analyze API] Using demo data for address:', address);
+    const demoData = generateDemoData(address, details);
+    console.log('[Analyze API] Demo data generated:', { estimated_value: demoData.estimated_value });
+    return NextResponse.json(demoData);
   } catch (error: any) {
-    console.error('Analysis error:', error);
+    console.error('[Analyze API] Error:', error);
     return NextResponse.json(
-      { error: 'Analysis failed', message: error.message },
+      { error: 'Analysis failed', message: error.message || 'Unknown error' },
       { status: 500 }
     );
   }
