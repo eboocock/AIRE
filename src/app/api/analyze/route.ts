@@ -152,8 +152,17 @@ function generateDemoData(address: string, details: PropertyDetails | null) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    // Check for authenticated user (skip if Supabase not configured)
+    let user = null;
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      try {
+        const supabase = await createClient();
+        const { data } = await supabase.auth.getUser();
+        user = data?.user;
+      } catch {
+        // Supabase auth check failed, continue as unauthenticated
+      }
+    }
 
     // Rate limiting for unauthenticated users
     if (!user) {
@@ -185,7 +194,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { address, details } = await request.json();
+    const body = await request.json();
+    const address = body.address;
+    const details = body.details || body.propertyDetails; // Support both field names
 
     if (!address) {
       return NextResponse.json({ error: 'Address is required' }, { status: 400 });
@@ -242,28 +253,30 @@ export async function POST(request: NextRequest) {
         is_demo: false,
       };
 
-      // Cache in Supabase
-      try {
-        const supabase = await createClient();
-        await supabase.from('ai_valuations').insert({
-          street_address: result.street_address,
-          city: result.city,
-          state: result.state,
-          zip_code: result.zip_code,
-          estimated_value: result.estimated_value,
-          value_low: result.value_low,
-          value_high: result.value_high,
-          confidence_score: result.confidence_score,
-          price_per_sqft: result.price_per_sqft,
-          property_data: result.property_data,
-          comparables: result.comparables,
-          market_data: result.market_data,
-          listing_description: result.listing_description,
-          improvements: result.improvements,
-          data_sources: result.data_sources,
-        });
-      } catch {
-        // Caching failed, continue anyway
+      // Cache in Supabase (if configured)
+      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        try {
+          const supabase = await createClient();
+          await supabase.from('ai_valuations').insert({
+            street_address: result.street_address,
+            city: result.city,
+            state: result.state,
+            zip_code: result.zip_code,
+            estimated_value: result.estimated_value,
+            value_low: result.value_low,
+            value_high: result.value_high,
+            confidence_score: result.confidence_score,
+            price_per_sqft: result.price_per_sqft,
+            property_data: result.property_data,
+            comparables: result.comparables,
+            market_data: result.market_data,
+            listing_description: result.listing_description,
+            improvements: result.improvements,
+            data_sources: result.data_sources,
+          });
+        } catch {
+          // Caching failed, continue anyway
+        }
       }
 
       return NextResponse.json(result);
