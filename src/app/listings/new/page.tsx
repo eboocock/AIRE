@@ -148,15 +148,15 @@ export default function NewListingPage() {
       const data = await res.json();
 
       updateForm({
-        ai_estimated_value: data.valuation?.estimatedValue || null,
-        ai_value_low: data.valuation?.valueLow || null,
-        ai_value_high: data.valuation?.valueHigh || null,
-        ai_confidence_score: data.valuation?.confidenceScore || null,
-        ai_generated_description: data.description || '',
+        ai_estimated_value: data.estimated_value || null,
+        ai_value_low: data.value_low || null,
+        ai_value_high: data.value_high || null,
+        ai_confidence_score: data.confidence_score || null,
+        ai_generated_description: data.listing_description || '',
       });
 
-      if (!form.list_price && data.valuation?.estimatedValue) {
-        updateForm({ list_price: data.valuation.estimatedValue.toString() });
+      if (!form.list_price && data.estimated_value) {
+        updateForm({ list_price: data.estimated_value.toString() });
       }
     } catch (err: any) {
       setError('AI analysis failed. You can still set pricing manually.');
@@ -187,8 +187,8 @@ export default function NewListingPage() {
       if (!res.ok) throw new Error('Description generation failed');
       const data = await res.json();
 
-      if (data.description) {
-        updateForm({ ai_generated_description: data.description });
+      if (data.listing_description) {
+        updateForm({ ai_generated_description: data.listing_description });
       }
     } catch {
       setError('Could not generate description. Please write one manually.');
