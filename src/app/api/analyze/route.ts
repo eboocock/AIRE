@@ -1,80 +1,120 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
+const ESTATED_API_KEY = process.env.ESTATED_API_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
-// Simple in-memory rate limiting for unauthenticated users
-// In production, use Redis or similar
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
-const MAX_REQUESTS_UNAUTHENTICATED = 3; // 3 requests per hour for unauthenticated
-
 interface PropertyDetails {
-  latitude?: number;
-  longitude?: number;
   city?: string;
   state?: string;
   zipCode?: string;
 }
 
-// Fetch property data from Realty Mole API
-async function fetchPropertyData(address: string) {
-  if (!RAPIDAPI_KEY) return null;
+interface EstatedProperty {
+  address?: {
+    street_address?: string;
+    city?: string;
+    state?: string;
+    zip_code?: string;
+    county?: string;
+  };
+  parcel?: {
+    area_sq_ft?: number;
+    county_name?: string;
+  };
+  structure?: {
+    beds_count?: number;
+    baths?: number;
+    total_area_sq_ft?: number;
+    year_built?: number;
+    stories?: number;
+    rooms_count?: number;
+    architecture_type?: string;
+  };
+  valuation?: {
+    value?: number;
+    low?: number;
+    high?: number;
+    date?: string;
+  };
+  taxes?: {
+    year?: number;
+    amount?: number;
+    assessment_year?: number;
+    market_value?: number;
+  }[];
+  owner?: {
+    name?: string;
+  };
+  deeds?: {
+    sale_price?: number;
+    sale_date?: string;
+  }[];
+}
+
+// Fetch property data from Estated API
+async function fetchPropertyData(address: string): Promise<EstatedProperty | null> {
+  if (!ESTATED_API_KEY) {
+    console.log('[Estated] No API key configured');
+    return null;
+  }
 
   try {
-    const response = await fetch(
-      `https://realty-mole-property-api.p.rapidapi.com/properties?address=${encodeURIComponent(address)}`,
-      {
-        headers: {
-          'X-RapidAPI-Key': RAPIDAPI_KEY,
-          'X-RapidAPI-Host': 'realty-mole-property-api.p.rapidapi.com',
-        },
-      }
-    );
+    const url = `https://apis.estated.com/v4/property?token=${ESTATED_API_KEY}&combined_address=${encodeURIComponent(address)}`;
+    console.log('[Estated] Fetching property data');
 
-    if (!response.ok) return null;
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.log('[Estated] API error:', response.status);
+      return null;
+    }
+
     const data = await response.json();
-    return data?.[0] || null;
-  } catch {
+
+    if (data.error) {
+      console.log('[Estated] API returned error:', data.error);
+      return null;
+    }
+
+    console.log('[Estated] Property data received');
+    return data.data as EstatedProperty;
+  } catch (error) {
+    console.error('[Estated] Fetch error:', error);
     return null;
   }
 }
 
-// Fetch comparable sales
-async function fetchComparables(lat: number, lon: number) {
-  if (!RAPIDAPI_KEY) return [];
-
-  try {
-    const response = await fetch(
-      `https://realty-mole-property-api.p.rapidapi.com/saleRecords?latitude=${lat}&longitude=${lon}&radius=1&limit=5`,
-      {
-        headers: {
-          'X-RapidAPI-Key': RAPIDAPI_KEY,
-          'X-RapidAPI-Host': 'realty-mole-property-api.p.rapidapi.com',
-        },
-      }
-    );
-
-    if (!response.ok) return [];
-    return await response.json();
-  } catch {
-    return [];
+// Generate AI listing description using Claude
+async function generateListingDescription(propertyData: EstatedProperty, address: string): Promise<string | null> {
+  if (!ANTHROPIC_API_KEY) {
+    console.log('[Claude] No API key configured');
+    return null;
   }
-}
 
-// Generate AI listing description
-async function generateListingDescription(propertyData: any) {
-  if (!ANTHROPIC_API_KEY) return null;
+  const structure = propertyData.structure || {};
+  const addr = propertyData.address || {};
 
-  const prompt = `Write a compelling real estate listing description for this property. Be professional and highlight key selling points. 3-4 paragraphs.
+  const prompt = `Write a compelling real estate listing description for this property. Be professional and highlight key selling points. Keep it to 3 paragraphs.
 
-Property: ${propertyData.beds || 4} bed, ${propertyData.baths || 2.5} bath, ${propertyData.sqft?.toLocaleString() || '2,500'} sqft
-Location: ${propertyData.city || 'Unknown'}, ${propertyData.state || 'WA'}
-Year Built: ${propertyData.yearBuilt || 'Recently'}
-Features: ${propertyData.features?.join(', ') || 'Modern finishes'}`;
+Property Details:
+- Address: ${address}
+- Bedrooms: ${structure.beds_count || 'Unknown'}
+- Bathrooms: ${structure.baths || 'Unknown'}
+- Square Feet: ${structure.total_area_sq_ft?.toLocaleString() || 'Unknown'}
+- Year Built: ${structure.year_built || 'Unknown'}
+- Stories: ${structure.stories || 'Unknown'}
+- Architecture: ${structure.architecture_type || 'Traditional'}
+- Location: ${addr.city || 'Unknown'}, ${addr.state || 'WA'}
+
+Write an engaging description that would appeal to buyers. Focus on the home's features and potential. Do not mention specific prices.`;
 
   try {
+    console.log('[Claude] Generating listing description');
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -89,17 +129,22 @@ Features: ${propertyData.features?.join(', ') || 'Modern finishes'}`;
       }),
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.log('[Claude] API error:', response.status);
+      return null;
+    }
+
     const data = await response.json();
+    console.log('[Claude] Description generated');
     return data.content?.[0]?.text || null;
-  } catch {
+  } catch (error) {
+    console.error('[Claude] Error:', error);
     return null;
   }
 }
 
 // Parse address string to extract city, state, zip
 function parseAddress(address: string): { city: string; state: string; zipCode: string } {
-  // Expected format: "123 Main St, City, ST 12345"
   const parts = address.split(',').map(p => p.trim());
   let city = 'Unknown';
   let state = 'WA';
@@ -129,6 +174,7 @@ function generateDemoData(address: string, details: PropertyDetails | null) {
   const state = details?.state || parsed.state;
   const zipCode = details?.zipCode || parsed.zipCode;
 
+  // Adjust pricing based on known areas
   if (addrLower.includes('sammamish') || addrLower.includes('98075')) {
     pricePerSqft = 585;
     city = 'Sammamish';
@@ -180,7 +226,7 @@ export async function POST(request: NextRequest) {
   console.log('[Analyze API] Request received');
 
   try {
-    // Parse request body first
+    // Parse request body
     let body;
     try {
       body = await request.json();
@@ -198,7 +244,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Address is required' }, { status: 400 });
     }
 
-    // Check for authenticated user (skip if Supabase not configured)
+    // Check for authenticated user (optional)
     let user = null;
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       try {
@@ -206,52 +252,67 @@ export async function POST(request: NextRequest) {
         const { data } = await supabase.auth.getUser();
         user = data?.user;
       } catch {
-        // Supabase auth check failed, continue as unauthenticated
+        // Supabase auth check failed, continue
       }
     }
 
-    // Rate limiting for unauthenticated users (disabled for now to debug)
-    // TODO: Re-enable after testing
-
-    // Try to fetch real data
+    // Fetch real property data from Estated
     const propertyData = await fetchPropertyData(address);
 
-    if (propertyData) {
-      // Real data available
-      const [comps, description] = await Promise.all([
-        fetchComparables(propertyData.latitude, propertyData.longitude),
-        generateListingDescription(propertyData),
-      ]);
+    if (propertyData && propertyData.structure) {
+      console.log('[Analyze API] Real property data available');
 
-      const estimatedValue = propertyData.price || propertyData.estimatedValue ||
-        (propertyData.squareFootage * 500);
+      const structure = propertyData.structure;
+      const valuation = propertyData.valuation;
+      const addr = propertyData.address || {};
+      const parcel = propertyData.parcel || {};
+
+      // Get the most recent sale for comparables context
+      const lastSale = propertyData.deeds?.[0];
+
+      // Calculate estimated value
+      let estimatedValue = valuation?.value || 0;
+      if (!estimatedValue && structure.total_area_sq_ft) {
+        // Fallback: estimate based on area average
+        estimatedValue = structure.total_area_sq_ft * 450;
+      }
+
+      // Generate AI description
+      const description = await generateListingDescription(propertyData, address);
 
       const result = {
         street_address: address,
-        city: propertyData.city,
-        state: propertyData.state,
-        zip_code: propertyData.zipCode,
+        city: addr.city || parseAddress(address).city,
+        state: addr.state || 'WA',
+        zip_code: addr.zip_code || parseAddress(address).zipCode,
+        county: addr.county || parcel.county_name,
         estimated_value: estimatedValue,
-        value_low: Math.round(estimatedValue * 0.95 / 1000) * 1000,
-        value_high: Math.round(estimatedValue * 1.05 / 1000) * 1000,
-        confidence_score: 88,
-        price_per_sqft: propertyData.squareFootage
-          ? Math.round(estimatedValue / propertyData.squareFootage)
-          : 500,
+        value_low: valuation?.low || Math.round(estimatedValue * 0.95 / 1000) * 1000,
+        value_high: valuation?.high || Math.round(estimatedValue * 1.05 / 1000) * 1000,
+        confidence_score: valuation?.value ? 92 : 75,
+        price_per_sqft: structure.total_area_sq_ft
+          ? Math.round(estimatedValue / structure.total_area_sq_ft)
+          : 450,
         property_data: {
-          beds: propertyData.bedrooms,
-          baths: propertyData.bathrooms,
-          sqft: propertyData.squareFootage,
-          yearBuilt: propertyData.yearBuilt,
-          lotSize: propertyData.lotSize,
-          propertyType: propertyData.propertyType,
+          beds: structure.beds_count || null,
+          baths: structure.baths || null,
+          sqft: structure.total_area_sq_ft || null,
+          yearBuilt: structure.year_built || null,
+          stories: structure.stories || null,
+          lotSize: parcel.area_sq_ft ? Math.round(parcel.area_sq_ft / 43560 * 100) / 100 : null,
+          architectureType: structure.architecture_type || null,
+          roomsCount: structure.rooms_count || null,
         },
-        comparables: comps.slice(0, 5).map((c: any) => ({
-          address: c.formattedAddress || c.addressLine1,
-          price: c.price || c.lastSalePrice,
-          sqft: c.squareFootage,
-          saleDate: c.lastSaleDate,
-        })),
+        owner: propertyData.owner?.name || null,
+        last_sale: lastSale ? {
+          price: lastSale.sale_price,
+          date: lastSale.sale_date,
+        } : null,
+        taxes: propertyData.taxes?.[0] ? {
+          year: propertyData.taxes[0].year,
+          amount: propertyData.taxes[0].amount,
+          assessed_value: propertyData.taxes[0].market_value,
+        } : null,
         market_data: {
           marketTemp: 'warm',
           daysOnMarket: 21,
@@ -259,12 +320,25 @@ export async function POST(request: NextRequest) {
           walkScore: 65,
         },
         listing_description: description || generateDemoData(address, details).listing_description,
-        improvements: generateDemoData(address, details).improvements,
-        data_sources: ['Realty Mole'],
+        improvements: [
+          {
+            item: 'Professional photography & staging',
+            cost: 800,
+            addedValue: Math.round(estimatedValue * 0.03),
+            roi: '650%'
+          },
+          {
+            item: 'Fresh interior paint',
+            cost: 2500,
+            addedValue: Math.round(estimatedValue * 0.02),
+            roi: '220%'
+          },
+        ],
+        data_sources: ['Estated'],
         is_demo: false,
       };
 
-      // Cache in Supabase (if configured)
+      // Cache in Supabase (optional)
       if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         try {
           const supabase = await createClient();
@@ -279,14 +353,13 @@ export async function POST(request: NextRequest) {
             confidence_score: result.confidence_score,
             price_per_sqft: result.price_per_sqft,
             property_data: result.property_data,
-            comparables: result.comparables,
             market_data: result.market_data,
             listing_description: result.listing_description,
             improvements: result.improvements,
             data_sources: result.data_sources,
           });
         } catch {
-          // Caching failed, continue anyway
+          // Caching failed, continue
         }
       }
 
@@ -298,6 +371,7 @@ export async function POST(request: NextRequest) {
     const demoData = generateDemoData(address, details);
     console.log('[Analyze API] Demo data generated:', { estimated_value: demoData.estimated_value });
     return NextResponse.json(demoData);
+
   } catch (error: any) {
     console.error('[Analyze API] Error:', error);
     return NextResponse.json(
