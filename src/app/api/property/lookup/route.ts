@@ -1,23 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const ESTATED_API_KEY = process.env.ESTATED_API_KEY;
+const ATTOM_API_KEY = process.env.ATTOM_API_KEY;
 
-interface EstatedProperty {
-  address?: {
-    street_address?: string;
-    city?: string;
-    state?: string;
-    zip_code?: string;
-  };
-  structure?: {
-    year_built?: number;
-    beds_count?: number;
-    baths?: number;
-    total_area_sq_ft?: number;
-  };
-  owner?: {
-    name?: string;
-  };
+// Parse address into components for ATTOM API
+function parseAddress(address: string): { address1: string; address2: string } | null {
+  // Expected format: "123 Main St, Seattle, WA 98101"
+  const parts = address.split(',').map(p => p.trim());
+  if (parts.length < 2) return null;
+
+  const address1 = parts[0]; // Street address
+  const address2 = parts.slice(1).join(', '); // City, State ZIP
+
+  return { address1, address2 };
 }
 
 export async function GET(request: NextRequest) {
@@ -27,21 +21,34 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Address is required' }, { status: 400 });
   }
 
-  if (!ESTATED_API_KEY) {
+  if (!ATTOM_API_KEY) {
     return NextResponse.json({
       error: 'Property lookup not configured',
       data: null
     }, { status: 200 });
   }
 
+  const parsed = parseAddress(address);
+  if (!parsed) {
+    return NextResponse.json({
+      error: 'Invalid address format',
+      data: null
+    }, { status: 200 });
+  }
+
   try {
-    const url = `https://apis.estated.com/v4/property?token=${ESTATED_API_KEY}&combined_address=${encodeURIComponent(address)}`;
+    // ATTOM Property API - Basic Profile endpoint
+    const url = `https://api.gateway.attomdata.com/propertyapi/v1.0.0/property/basicprofile?address1=${encodeURIComponent(parsed.address1)}&address2=${encodeURIComponent(parsed.address2)}`;
 
     const response = await fetch(url, {
-      headers: { 'Accept': 'application/json' },
+      headers: {
+        'Accept': 'application/json',
+        'apikey': ATTOM_API_KEY,
+      },
     });
 
     if (!response.ok) {
+      console.log('[ATTOM] API error:', response.status);
       return NextResponse.json({
         error: 'Property not found',
         data: null
@@ -50,25 +57,28 @@ export async function GET(request: NextRequest) {
 
     const result = await response.json();
 
-    if (result.error || !result.data) {
+    if (!result.property || result.property.length === 0) {
       return NextResponse.json({
         error: 'Property not found',
         data: null
       }, { status: 200 });
     }
 
-    const property = result.data as EstatedProperty;
+    const property = result.property[0];
+    const building = property.building || {};
+    const summary = building.summary || {};
+    const owner = property.assessment?.owner || {};
 
     return NextResponse.json({
       data: {
-        year_built: property.structure?.year_built || null,
-        owner_name: property.owner?.name || null,
-        beds: property.structure?.beds_count || null,
-        baths: property.structure?.baths || null,
-        sqft: property.structure?.total_area_sq_ft || null,
-        city: property.address?.city || null,
-        state: property.address?.state || null,
-        zip_code: property.address?.zip_code || null,
+        year_built: summary.yearBuilt || null,
+        owner_name: owner.owner1FullName || owner.corporateIndicator || null,
+        beds: summary.bedrooms || null,
+        baths: summary.bathrooms || null,
+        sqft: building.size?.livingSize || building.size?.universalSize || null,
+        city: property.address?.locality || null,
+        state: property.address?.countrySubd || null,
+        zip_code: property.address?.postal1 || null,
       }
     });
   } catch (error) {
