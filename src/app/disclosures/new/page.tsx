@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -12,7 +12,40 @@ export default function NewDisclosurePage() {
   const [sellerName, setSellerName] = useState('');
   const [yearBuilt, setYearBuilt] = useState('');
   const [loading, setLoading] = useState(false);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupMessage, setLookupMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const lookupProperty = useCallback(async (addr: string) => {
+    if (addr.trim().length < 10) return;
+
+    setLookupLoading(true);
+    setLookupMessage(null);
+
+    try {
+      const res = await fetch(`/api/property/lookup?address=${encodeURIComponent(addr.trim())}`);
+      const result = await res.json();
+
+      if (result.data) {
+        let updated = false;
+        if (result.data.year_built && !yearBuilt) {
+          setYearBuilt(result.data.year_built.toString());
+          updated = true;
+        }
+        if (result.data.owner_name && !sellerName) {
+          setSellerName(result.data.owner_name);
+          updated = true;
+        }
+        if (updated) {
+          setLookupMessage('Property details found in tax records');
+        }
+      }
+    } catch {
+      // Lookup failed silently
+    } finally {
+      setLookupLoading(false);
+    }
+  }, [yearBuilt, sellerName]);
 
   const forms = [
     {
@@ -129,35 +162,52 @@ export default function NewDisclosurePage() {
             <label className="block text-sm font-medium text-gray-300 mb-1">
               Property Address <span className="text-red-400">*</span>
             </label>
-            <input
-              type="text"
-              value={address}
-              onChange={e => setAddress(e.target.value)}
-              placeholder="123 Main St, Seattle, WA 98101"
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-aire-500"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={address}
+                onChange={e => setAddress(e.target.value)}
+                onBlur={e => lookupProperty(e.target.value)}
+                placeholder="123 Main St, Seattle, WA 98101"
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-aire-500"
+              />
+              {lookupLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <i className="fas fa-spinner fa-spin text-gray-400" />
+                </div>
+              )}
+            </div>
+            {lookupMessage && (
+              <p className="text-xs text-green-400 mt-1 flex items-center gap-1">
+                <i className="fas fa-check-circle" /> {lookupMessage}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Seller Name <span className="text-red-400">*</span>
+                <span className="text-xs text-gray-500 font-normal ml-1">(from tax records)</span>
               </label>
               <input
                 type="text"
                 value={sellerName}
                 onChange={e => setSellerName(e.target.value)}
-                placeholder="John Smith"
+                placeholder="Auto-filled from records or enter manually"
                 className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-aire-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Year Built</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Year Built
+                <span className="text-xs text-gray-500 font-normal ml-1">(from tax records)</span>
+              </label>
               <input
                 type="number"
                 value={yearBuilt}
                 onChange={e => setYearBuilt(e.target.value)}
-                placeholder="1995"
+                placeholder="Auto-filled or enter manually"
                 min="1800"
                 max={new Date().getFullYear()}
                 className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-aire-500"
