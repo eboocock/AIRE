@@ -61,6 +61,13 @@ export function DashboardContent({ user, profile, listings, stats }: DashboardCo
             </div>
             <div className="flex items-center gap-3">
               <Link
+                href="/disclosures"
+                className="inline-flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white px-5 py-3 rounded-xl font-medium transition"
+              >
+                <i className="fas fa-file-contract mr-2" />
+                Disclosures
+              </Link>
+              <Link
                 href="/listings/new"
                 className="inline-flex items-center justify-center bg-aire-500 hover:bg-aire-600 text-white px-6 py-3 rounded-xl font-semibold transition"
               >
