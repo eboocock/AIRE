@@ -269,9 +269,9 @@ INSERT INTO disclosure_questions (form_id, section_key, section_label, question_
 ('b2c3d4e5-f6a7-8901-bcde-f12345678901', 'lead_paint', 'Lead-Based Paint', 'lead_known_presence', 'B',
  'Do you have knowledge of lead-based paint or lead-based paint hazards in the property?',
  'Lead paint hazards include paint that is chipping, peeling, or deteriorating, especially on windows, doors, and friction surfaces.',
- 'yes_no', true, 'Explain the known lead-based paint and/or lead-based paint hazards:', true, 20),
+ 'yes_no', true, 'Explain the known lead-based paint and/or lead-based paint hazards:', true, 20, null),
 
 ('b2c3d4e5-f6a7-8901-bcde-f12345678901', 'lead_paint', 'Lead-Based Paint', 'lead_records_available', 'C',
  'Do you have any records or reports pertaining to lead-based paint in the property?',
  'This includes any prior inspection reports, risk assessments, or abatement records.',
- 'yes_no_na', true, 'List the documents available:', true, 30);
+ 'yes_no_na', true, 'List the documents available:', true, 30, null);
